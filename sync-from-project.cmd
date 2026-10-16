@@ -57,7 +57,7 @@ if errorlevel 1 (
 git remote get-url origin >nul 2>nul
 if errorlevel 1 (
   echo [안내] 리모트가 없습니다. 최초 1회:
-  echo        git remote add origin https://github.com/jun1bh1/ninja_kr.git
+  echo        git remote add origin https://github.com/jun1bh1/poe2_extensions.git
   echo        git push -u origin master
 ) else (
   git push

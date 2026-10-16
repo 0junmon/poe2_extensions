@@ -26,7 +26,7 @@ tools/                 로컬 도구 (index.js, data-search*.js/html 사본)
    ```
 2. 최초 1회 리모트 등록:
    ```
-   git remote add origin https://github.com/jun1bh1/ninja_kr.git
+   git remote add origin https://github.com/jun1bh1/poe2_extensions.git
    git push -u origin master
    ```
 
