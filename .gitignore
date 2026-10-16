@@ -1,0 +1,7 @@
+# 실행/생성물은 저장소에 올리지 않는다.
+node_modules/
+dist/
+.venv*/
+new/
+data/
+*.log

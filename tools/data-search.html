@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>번역 데이터 키 검색</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: Arial, "Malgun Gothic", sans-serif;
+        background: #111318;
+        color: #e8e4dc;
+      }
+
+      body {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 32px 20px 64px;
+      }
+
+      h1 {
+        color: #dfbd68;
+        font-size: 1.5rem;
+      }
+
+      .hint,
+      .status {
+        color: #aaa8a1;
+        line-height: 1.6;
+      }
+
+      code {
+        color: #e5c36b;
+      }
+
+      form.search {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+        margin: 18px 0 12px;
+      }
+
+      #query {
+        flex: 1;
+        min-width: 240px;
+        box-sizing: border-box;
+        border: 1px solid #716548;
+        border-radius: 6px;
+        background: #24262c;
+        color: inherit;
+        font: inherit;
+        padding: 12px 14px;
+        outline: none;
+      }
+
+      #query:focus {
+        border-color: #dfbd68;
+      }
+
+      #query::placeholder {
+        color: #7d7b75;
+      }
+
+      /* 완전 ↔ 부분 일치 스위치 (검색 상자 오른쪽) */
+      .switch {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+      }
+
+      .switch input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+      }
+
+      .switch .track {
+        position: relative;
+        display: inline-block;
+        width: 42px;
+        height: 22px;
+        border: 1px solid #6f6a5c;
+        border-radius: 11px;
+        background: #33363d;
+        transition: background 0.15s ease, border-color 0.15s ease;
+      }
+
+      .switch .thumb {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #8d8b85;
+        transition: transform 0.15s ease, background 0.15s ease;
+      }
+
+      .switch input:checked + .track {
+        border-color: #dfbd68;
+        background: #5b4a1c;
+      }
+
+      .switch input:checked + .track .thumb {
+        transform: translateX(20px);
+        background: #dfbd68;
+      }
+
+      .switch input:focus-visible + .track {
+        outline: 2px solid #7fb1e8;
+        outline-offset: 2px;
+      }
+
+      .switch .mode-label {
+        min-width: 2.4em;
+        color: #e5c36b;
+        font-size: 0.82rem;
+        font-weight: 700;
+      }
+
+      button.action {
+        padding: 12px 18px;
+        border: 1px solid #8a7233;
+        border-radius: 6px;
+        background: #dfbd68;
+        color: #1b1d22;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      button.action:hover {
+        background: #eccd82;
+      }
+
+      button.action.secondary {
+        border-color: #6f6a5c;
+        background: #33363d;
+        color: #e5c36b;
+      }
+
+      button.action.secondary:hover {
+        background: #41454d;
+      }
+
+      #results {
+        display: grid;
+        gap: 12px;
+        margin: 16px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      #results li.result,
+      #results li.dup-group {
+        border: 1px solid #393b42;
+        border-radius: 8px;
+        background: #1a1c22;
+        padding: 12px 14px;
+      }
+
+      #results li.dup-group {
+        border-color: #4a4234;
+      }
+
+      .result .head,
+      .dup-group .head,
+      .occurrence .head {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        align-items: baseline;
+      }
+
+      .result a.file,
+      .occurrence a.file {
+        color: #7fb1e8;
+        font-size: 0.82rem;
+        word-break: break-all;
+      }
+
+      .meta {
+        color: #8d8b85;
+        font-size: 0.78rem;
+      }
+
+      pre {
+        margin: 10px 0 0;
+        padding: 10px 12px;
+        overflow-x: auto;
+        border-radius: 6px;
+        background: #14161a;
+        font-family: Consolas, "D2Coding", monospace;
+        font-size: 0.86rem;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .key {
+        color: #9fb7d4;
+      }
+
+      .value {
+        color: #cfcac0;
+      }
+
+      .value.strong {
+        color: #e5c36b;
+        font-weight: 700;
+      }
+
+      strong.hit {
+        color: #fff2c2;
+        text-decoration: underline;
+      }
+
+      .dup-key {
+        color: #e5c36b;
+        font-family: Consolas, "D2Coding", monospace;
+        font-size: 0.95rem;
+        font-weight: 700;
+        word-break: break-word;
+      }
+
+      .badge {
+        border-radius: 4px;
+        background: #4a3d20;
+        color: #f0d89a;
+        font-size: 0.72rem;
+        padding: 2px 7px;
+      }
+
+      .badge.applied {
+        background: #24402c;
+        color: #a8e0b8;
+      }
+
+      ul.occurrences {
+        display: grid;
+        gap: 8px;
+        margin: 10px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      li.occurrence {
+        border: 1px dashed #3f4249;
+        border-radius: 6px;
+        padding: 8px 10px;
+        background: #171920;
+      }
+
+      li.occurrence pre {
+        margin-top: 6px;
+        font-size: 0.82rem;
+      }
+
+      button.more {
+        margin-top: 10px;
+        border: 1px dashed #6f6a5c;
+        border-radius: 6px;
+        background: #23262c;
+        color: #e5c36b;
+        font: inherit;
+        font-size: 0.82rem;
+        padding: 6px 12px;
+        cursor: pointer;
+      }
+
+      button.more:hover {
+        background: #2c3037;
+      }
+
+      #results li.more {
+        border-style: dashed;
+        color: #aaa8a1;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>번역 데이터 키 검색</h1>
+      <p class="hint">
+        <code>translations/</code> 의 모든 JSON 파일 키를 검색합니다. 결과는 파일의 전체
+        주소와 함께, 파일 구조가 배열이면 그 <strong>객체</strong>(배열 항목)를, 구조가
+        객체면 그 <strong>항목</strong>(id → 값)을 원본 구조 그대로 보여줍니다. 일치한
+        부분과 값은 굵게 표시됩니다. <strong>중복 검색</strong> 은 같은 키가 여러 파일/테이블에
+        있는 그룹을 값 충돌 우선으로 보여줍니다(그룹마다 5개까지, 더보기로 펼침).<br />
+        검색 상자 오른쪽 스위치는 <strong>왼쪽 = 완전 검색</strong>,
+        <strong>오른쪽 = 부분 일치 검색</strong> 입니다. 오른쪽 버튼 두 개는 각각 검색과
+        중복 검색이고, 엔터를 눌러도 검색됩니다. 그냥 더블클릭해 열어도(내장 데이터 생성
+        후) 동작합니다.
+      </p>
+
+      <form id="search-form" class="search" role="search">
+        <input
+          id="query"
+          type="search"
+          placeholder="예: Gem Level, Physical, 잔혹한(키만 검색)"
+          autocomplete="off"
+        />
+        <label
+          class="switch"
+          title="스위치 왼쪽 = 완전 검색(키 전체가 일치), 오른쪽 = 부분 일치 검색(키 일부만 일치)"
+        >
+          <input
+            id="mode-switch"
+            type="checkbox"
+            role="switch"
+            aria-label="부분 일치 검색 켜기"
+          />
+          <span class="track" aria-hidden="true"><span class="thumb"></span></span>
+          <span class="mode-label" id="mode-label">완전</span>
+        </label>
+        <button id="search-button" class="action" type="submit">검색</button>
+        <button id="duplicate-button" class="action secondary" type="button">
+          중복 검색
+        </button>
+      </form>
+
+      <p id="status" class="status" role="status" aria-live="polite">
+        검색 데이터를 불러오는 중…
+      </p>
+      <p id="summary" class="status"></p>
+      <ul id="results" aria-live="polite"></ul>
+    </main>
+
+    <script src="./data-search-files.js"></script>
+    <script src="./data-search.js"></script>
+  </body>
+</html>
