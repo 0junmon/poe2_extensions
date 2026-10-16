@@ -40,10 +40,10 @@ for %%F in (build_translation_map.py build-all.cmd package.json) do (
 robocopy "%SRC%\scripts" "%DEST%pipeline\scripts" /MIR /NFL /NDL /NJH /NJS /NP >nul
 
 if exist "%SRC%\chrome-extension" (
-  robocopy "%SRC%\chrome-extension" "%DEST%sites\ninja" /MIR /NFL /NDL /NJH /NJS /NP >nul
-  echo   sites\ninja  <- chrome-extension\  (복사됨)
+  robocopy "%SRC%\chrome-extension" "%DEST%sites\ninja" /E /NFL /NDL /NJH /NJS /NP >nul
+  echo   sites\ninja  ^<- chrome-extension\  (robocopy exit=!ERRORLEVEL!)
 ) else (
-  echo   sites\ninja  <- chrome-extension\  [!] 소스 폴더가 없어 건너뜀
+  echo   sites\ninja  ^<- chrome-extension\  [!] 소스 폴더가 없어 건너뜀
 )
 
 cd /d "%DEST%"
@@ -61,5 +61,10 @@ if errorlevel 1 (
   echo        git push -u origin master
 ) else (
   git push
+)
+echo.
+if "%~1"=="" (
+  echo [안내] 창을 닫으려면 아무 키나 누르세요.
+  pause >nul
 )
 endlocal
