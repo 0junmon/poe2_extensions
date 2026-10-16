@@ -53,9 +53,16 @@ const OUTPUT_DIRECTORIES = [
 const nodeCommand = process.execPath;
 const pythonCommand = process.platform === "win32" ? "python" : "python3";
 const script = (fileName) => path.join(scriptDirectory, fileName);
-const translationMap = existsSync(script("build_translation_map.py"))
-  ? script("build_translation_map.py")
-  : path.join(projectRoot, "build_translation_map.py");
+// build_translation_map.py 는 scripts/(= pipeline/scripts) 안, 그 위(pipeline/), 데이터 폴더 루트 순으로 찾는다.
+const translationMap = [
+  script("build_translation_map.py"),
+  path.join(scriptDirectory, "..", "build_translation_map.py"),
+  path.join(projectRoot, "build_translation_map.py"),
+].find((file) => existsSync(file));
+if (!translationMap) {
+  console.error("build_translation_map.py 를 찾을 수 없습니다(코드 저장소의 pipeline/ 확인).");
+  process.exit(1);
+}
 
 const STEPS = [
   { name: "번역 맵 (GGPK 덤프)", command: pythonCommand, args: [translationMap] },

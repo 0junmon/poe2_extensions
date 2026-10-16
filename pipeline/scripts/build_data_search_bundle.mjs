@@ -7,12 +7,21 @@
 
 import { readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { resolveProjectRoot } from "./project-root.mjs";
-import { fileURLToPath } from "node:url";
-import "../data-search-files.js";
+import { resolveSourceFile } from "./source-root.mjs";
+
+// 파일 목록(data-search-files.js)은 코드 쪽에 있으므로 배치에 따라 찾아 읽는다.
+// 결과(data-search-data.js)는 그 파일 옆에 쓴다(data-search.html 이 같은 폴더에서 찾는다).
+const dataFilesPath = resolveSourceFile(
+  import.meta.url,
+  "../data-search-files.js",
+  "../../tools/data-search-files.js",
+);
+await import(pathToFileURL(dataFilesPath).href);
 
 const projectRoot = resolveProjectRoot(import.meta.url);
-const outputPath = path.join(projectRoot, "data-search-data.js");
+const outputPath = path.join(path.dirname(dataFilesPath), "data-search-data.js");
 const files = globalThis.DATA_SEARCH_FILES ?? [];
 const payloads = {};
 let totalBytes = 0;

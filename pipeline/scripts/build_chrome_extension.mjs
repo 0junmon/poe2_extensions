@@ -2,10 +2,29 @@ import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { resolveProjectRoot } from "./project-root.mjs";
+import { findCodeRoot, resolveSourceFile } from "./source-root.mjs";
 
+// 데이터(translations/)는 기준 폴더에서, 코드(확장/유저스크립트)는 이 파이프라인 기준으로 찾는다.
+// 그래서 번역 데이터 폴더에서 실행하든 코드 저장소에서 실행하든 같은 결과가 나온다.
 const projectRoot = resolveProjectRoot(import.meta.url);
-const outputDirectory = path.join(projectRoot, "dist", "poe-ninja-korean");
+const codeRoot = findCodeRoot(import.meta.url);
+const outputDirectory = path.join(codeRoot, "dist", "poe-ninja-korean");
 const translationDirectory = path.join(projectRoot, "translations");
+const manifestSource = resolveSourceFile(
+  import.meta.url,
+  "../chrome-extension/manifest.json",
+  "../../sites/ninja/manifest.json",
+);
+const contentSource = resolveSourceFile(
+  import.meta.url,
+  "../userscripts/poe-ninja-translation.user.js",
+  "../../core/content.js",
+);
+const pageSearchSource = resolveSourceFile(
+  import.meta.url,
+  "../chrome-extension/page_search.js",
+  "../../sites/ninja/page_search.js",
+);
 const dataFiles = [
   "names/game_terms.json",
   "names/mods.json",
@@ -31,18 +50,9 @@ const dataFiles = [
 // (and the older flat file names) before copying the current one.
 await rm(path.join(outputDirectory, "translations"), { recursive: true, force: true });
 await mkdir(path.join(outputDirectory, "translations"), { recursive: true });
-await cp(
-  path.join(projectRoot, "chrome-extension", "manifest.json"),
-  path.join(outputDirectory, "manifest.json"),
-);
-await cp(
-  path.join(projectRoot, "userscripts", "poe-ninja-translation.user.js"),
-  path.join(outputDirectory, "content.js"),
-);
-await cp(
-  path.join(projectRoot, "chrome-extension", "page_search.js"),
-  path.join(outputDirectory, "page_search.js"),
-);
+await cp(manifestSource, path.join(outputDirectory, "manifest.json"));
+await cp(contentSource, path.join(outputDirectory, "content.js"));
+await cp(pageSearchSource, path.join(outputDirectory, "page_search.js"));
 await Promise.all(
   dataFiles.map(async (fileName) => {
     const target = path.join(outputDirectory, "translations", fileName);

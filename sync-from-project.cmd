@@ -37,7 +37,7 @@ copy /y "%SRC%\search-payload.js" "%DEST%core\search-payload.js" >nul
 for %%F in (index.js data-search.js data-search.html data-search-files.js) do (
   if exist "%SRC%\%%F" copy /y "%SRC%\%%F" "%DEST%tools\%%F" >nul
 )
-for %%F in (build_translation_map.py build-all.cmd package.json) do (
+for %%F in (build_translation_map.py build-all.cmd package.json itemclass_singulars_source.json) do (
   if exist "%SRC%\%%F" copy /y "%SRC%\%%F" "%DEST%pipeline\%%F" >nul
 )
 robocopy "%SRC%\scripts" "%DEST%pipeline\scripts" /MIR /NFL /NDL /NJH /NJS /NP >nul

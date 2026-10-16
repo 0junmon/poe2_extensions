@@ -1,13 +1,22 @@
 import argparse
 import json
+import os
 import re
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
 
+# 기준 폴더(= data/, translations/ 가 있는 폴더).
+# build-all.cmd / build_all.mjs 가 POBKR_ROOT 로 넘겨주고, 없으면 이 파일 옆 폴더를 쓴다.
+# 코드(pipeline/)와 데이터(poe2_translation_kr)를 나눠 두어도 결과는 데이터 폴더에 쓰인다.
+PROJECT_ROOT = Path(
+    os.environ.get("POBKR_ROOT") or Path(__file__).resolve().parent
+).resolve()
+
+
 TRANSLATION_PATHS = {
-    name: Path(__file__).resolve().parent / "translations" / target
+    name: PROJECT_ROOT / "translations" / target
     for name, target in {
         "baseitemtypes.json": "items/base_items.json",
         "itemclasscategories.json": "items/item_classes.json",
@@ -191,9 +200,19 @@ def item_class_singular_name(name: str, category_name: str | None) -> str:
     return singularize_item_class_name(name)
 
 
-ITEM_CLASS_SINGULARS_SOURCE = (
-    Path(__file__).resolve().parent / "itemclass_singulars_source.json"
-)
+def input_path(file_name: str) -> Path:
+    """손으로 관리하는 입력 파일은 기준 폴더에서, 없으면 이 파일 옆에서 찾는다."""
+    candidates = (
+        PROJECT_ROOT / file_name,
+        Path(__file__).resolve().parent / file_name,
+    )
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return candidates[0]
+
+
+ITEM_CLASS_SINGULARS_SOURCE = input_path("itemclass_singulars_source.json")
 
 
 def load_item_class_singulars_source(path: Path) -> dict[str, str]:
@@ -656,13 +675,13 @@ def main() -> None:
     parser.add_argument(
         "--balance-dir",
         type=Path,
-        default=Path(__file__).resolve().parent / "data" / "balance",
+        default=PROJECT_ROOT / "data" / "balance",
         help="Folder containing English JSON files and the korean subfolder.",
     )
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path(__file__).resolve().parent / "translations" / "general" / "translation.json",
+        default=PROJECT_ROOT / "translations" / "general" / "translation.json",
         help="Destination JSON file.",
     )
     parser.add_argument(
