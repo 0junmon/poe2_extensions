@@ -1,8 +1,8 @@
 @echo off
-rem pobkr 프로젝트의 원본 코드를 이 저장소로 복사하고 커밋한다.
+rem 번역 데이터 폴더(poe2_translation_kr)의 코드를 이 저장소로 복사하고 커밋한다.
 rem
-rem   sync-from-project.cmd                  (기본 소스: ..\pobkr)
-rem   sync-from-project.cmd "D:\work\pobkr"
+rem   sync-from-project.cmd                  (기본 소스: ..\poe2_translation_kr, 없으면 ..\pobkr)
+rem   sync-from-project.cmd "D:\work\poe2_translation_kr"
 rem
 rem 복사 대상
 rem   core\content.js      <- userscripts\poe-ninja-translation.user.js
@@ -13,11 +13,14 @@ rem   tools\               <- index.js, data-search.js, data-search.html, data-s
 setlocal enabledelayedexpansion
 set "DEST=%~dp0"
 set "SRC=%~1"
-if "%SRC%"=="" set "SRC=%~dp0..\pobkr"
+if "%SRC%"=="" (
+  set "SRC=%~dp0..\pobkr"
+  if exist "%~dp0..\poe2_translation_kr\scripts\build_all.mjs" set "SRC=%~dp0..\poe2_translation_kr"
+)
 
 if not exist "%SRC%\scripts\build_all.mjs" (
   echo [오류] 소스 프로젝트를 찾을 수 없습니다: "%SRC%"
-  echo        사용법: sync-from-project.cmd "D:\work\pobkr"
+  echo        사용법: sync-from-project.cmd "D:\work\poe2_translation_kr"
   exit /b 1
 )
 

@@ -8,12 +8,12 @@ poe2 관련 확장 프로그램 코드 저장소(모노레포). 번역 데이터
 
 ```
 core/                  공통 코드 (모든 사이트가 공유)
-  content.js           번역 엔진 (= pobkr/userscripts/poe-ninja-translation.user.js)
+  content.js           번역 엔진 (= poe2_translation_kr/userscripts/poe-ninja-translation.user.js)
   search-payload.js    검색 payload
 sites/                 사이트별 확장 코드
   ninja/               poe.ninja 확장 (manifest.json, page_search.js)
   filter/              poe2 filter 사이트 확장 (같은 구성으로 추가)
-pipeline/              번역 데이터 생성 도구 (pobkr 프로젝트의 scripts/ 사본)
+pipeline/              번역 데이터 생성 도구 (poe2_translation_kr의 scripts/ 사본)
 tools/                 로컬 도구 (index.js, data-search*.js/html 사본)
 ```
 
@@ -21,8 +21,8 @@ tools/                 로컬 도구 (index.js, data-search*.js/html 사본)
 
 1. 원본 코드를 갱신한 뒤 이 저장소로 복사 + 커밋:
    ```
-   sync-from-project.cmd                 (기본: ..\pobkr)
-   sync-from-project.cmd "D:\work\pobkr"
+   sync-from-project.cmd                 (기본: ..\poe2_translation_kr, 없으면 ..\pobkr)
+   sync-from-project.cmd "D:\work\poe2_translation_kr"
    ```
 2. 최초 1회 리모트 등록:
    ```
@@ -42,4 +42,4 @@ tools/                 로컬 도구 (index.js, data-search*.js/html 사본)
   공유하세요(엔진을 고치면 모든 사이트 확장이 같은 내용을 쓰게 됩니다).
 - 번역 데이터 저장소 주소는 확장이 실행 중에 참조하는 **유일한 외부 주소**입니다.
   데이터 저장소를 바꾸면 각 확장의 `DATA_BASE_URL` 한 줄만 새 주소(커밋 해시 포함)로 갱신합니다.
-- `pipeline/`, `tools/`는 백업 사본입니다. 실행은 각자 로컬 프로젝트(pobkr)에서 합니다.
+- `pipeline/`, `tools/`는 백업 사본입니다. 실행은 데이터 폴더(poe2_translation_kr)에서 합니다.
