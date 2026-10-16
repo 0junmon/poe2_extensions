@@ -34,7 +34,7 @@ if not exist "%DEST%sites\ninja" mkdir "%DEST%sites\ninja"
 
 copy /y "%SRC%\userscripts\poe-ninja-translation.user.js" "%DEST%core\content.js" >nul
 copy /y "%SRC%\search-payload.js" "%DEST%core\search-payload.js" >nul
-for %%F in (index.js data-search.js data-search.html data-search-files.js) do (
+for %%F in (index.js data-search.js data-search.html data-search-files.js korean-search.html) do (
   if exist "%SRC%\%%F" copy /y "%SRC%\%%F" "%DEST%tools\%%F" >nul
 )
 for %%F in (build_translation_map.py build-all.cmd package.json itemclass_singulars_source.json) do (

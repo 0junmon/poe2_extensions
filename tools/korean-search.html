@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>한글 → 영문 id 검색 테스트</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: Arial, "Malgun Gothic", sans-serif;
+        background: #111318;
+        color: #e8e4dc;
+      }
+
+      body {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 32px 20px 64px;
+      }
+
+      h1 {
+        color: #dfbd68;
+      }
+
+      .hint,
+      .status {
+        color: #aaa8a1;
+        line-height: 1.5;
+      }
+
+      input {
+        box-sizing: border-box;
+        width: 100%;
+        border: 1px solid #716548;
+        border-radius: 6px;
+        background: #24262c;
+        color: inherit;
+        font: inherit;
+        padding: 13px 14px;
+      }
+
+      code {
+        color: #e5c36b;
+      }
+
+      ul {
+        display: grid;
+        gap: 6px;
+        padding: 0;
+        list-style: none;
+      }
+
+      li {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 8px 10px;
+        border: 1px solid #393b42;
+        border-radius: 6px;
+        background: #1a1c22;
+        font-family: Consolas, "D2Coding", monospace;
+        font-size: 0.9rem;
+        word-break: break-word;
+      }
+
+      li .ko {
+        color: #e5c36b;
+        font-weight: 700;
+      }
+
+      li .en {
+        color: #aaa8a1;
+        text-align: right;
+      }
+
+      li.more {
+        display: block;
+        border-style: dashed;
+        color: #aaa8a1;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>한글 → 영문 id 검색 테스트</h1>
+      <p class="hint">
+        확장 프로그램이 쓰는 현재 검색 로직(<code>chrome-extension/page_search.js</code>)에
+        검색어를 넣었을 때 어떤 영문 id가 검색 대상이 되는지 그대로 보여줍니다.
+        번역 JSON을 <code>fetch</code>하므로
+        <code>python -m http.server 8000</code> 같은 로컬 서버로 열어야 합니다.
+      </p>
+
+      <label for="query">검색어</label>
+      <input
+        id="query"
+        type="search"
+        placeholder="예: 고, 고유, 방패, 라비앙가의 혼백"
+        autocomplete="off"
+      />
+      <p id="status" class="status" role="status" aria-live="polite">
+        검색 데이터를 불러오는 중…
+      </p>
+      <p id="summary" class="status"></p>
+      <ul id="id-list" aria-live="polite"></ul>
+    </main>
+
+    <script src="./chrome-extension/page_search.js"></script>
+    <script type="module" src="./search-demo.js"></script>
+  </body>
+</html>
