@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "poe.ninja Korean Translation",
+  "description": "Korean translation and search for Path of Exile 2 on poe.ninja.",
+  "version": "0.6.24",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://poe.ninja/poe2/*",
+        "https://www.poe.ninja/poe2/*"
+      ],
+      "js": ["page_search.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": [
+        "https://poe.ninja/poe2/*",
+        "https://www.poe.ninja/poe2/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["translations/*"],
+      "matches": [
+        "https://poe.ninja/*",
+        "https://www.poe.ninja/*"
+      ]
+    }
+  ]
+}
