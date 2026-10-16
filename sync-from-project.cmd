@@ -54,7 +54,7 @@ if errorlevel 1 (
 ) else (
   echo 커밋 완료.
 )
-git remote >nul 2>nul
+git remote get-url origin >nul 2>nul
 if errorlevel 1 (
   echo [안내] 리모트가 없습니다. 최초 1회:
   echo        git remote add origin https://github.com/jun1bh1/ninja_kr.git
