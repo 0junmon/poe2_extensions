@@ -71,22 +71,17 @@ const normalizeLine = (text) =>
 // {1} Seconds" -> "{1}초 동안 {0} 생명력 회복"), so such a line keeps its indexed
 // placeholders and the content script maps them back to the captured values.
 const PLACEHOLDER_GUARD = "\u0001";
-// The extension no longer renders " / " as a separator; keep it out of the
-// generated Korean lines as well.
-const normalizeDisplaySeparators = (text) => text.replace(/ \/ /g, " · ");
 const normalizeKoreanLine = (text) => {
   if (typeof text !== "string") {
     return "";
   }
   if (isSequential(placeholderIndices(text))) {
-    return normalizeDisplaySeparators(stripMarkup(placeholdersToHash(text)));
+    return stripMarkup(placeholdersToHash(text));
   }
   const guarded = text.replace(/\{(\d+)\}/g, `${PLACEHOLDER_GUARD}$1${PLACEHOLDER_GUARD}`);
-  return normalizeDisplaySeparators(
-    stripMarkup(guarded).replace(
-      new RegExp(`${PLACEHOLDER_GUARD}(\\d+)${PLACEHOLDER_GUARD}`, "g"),
-      "{$1}",
-    ),
+  return stripMarkup(guarded).replace(
+    new RegExp(`${PLACEHOLDER_GUARD}(\\d+)${PLACEHOLDER_GUARD}`, "g"),
+    "{$1}",
   );
 };
 

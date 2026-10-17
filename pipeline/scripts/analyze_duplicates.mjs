@@ -276,7 +276,7 @@ for (const group of conflictGroups) {
     );
   }
   lines.push(
-    `  공식 한글: ${group.officialKorean.length ? group.officialKorean.join(" | ") : "없음"}`,
+    `  공식 한글: ${group.officialKorean.length ? group.officialKorean.join(" / ") : "없음"}`,
   );
 }
 lines.push("");

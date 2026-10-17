@@ -135,7 +135,7 @@ async function loadAll() {
   let skippedFiles = 0;
   let fromBundle = 0;
   for (const fileName of DATA_FILES) {
-    statusElement.textContent = `검색 데이터를 불러오는 중… (${loadedFiles}개, 전체 ${DATA_FILES.length}개) ${fileName}`;
+    statusElement.textContent = `검색 데이터를 불러오는 중… (${loadedFiles} / ${DATA_FILES.length}) ${fileName}`;
     if (useBundle && bundledPayloads[fileName] !== undefined) {
       registerPayload(fileName, bundledPayloads[fileName]);
       loadedFiles += 1;
@@ -167,7 +167,7 @@ async function loadAll() {
     : "JSON 직접 읽기";
   statusElement.textContent = `키 ${entries.length.toLocaleString(
     "ko",
-  )}개 로드 완료 (파일 ${loadedFiles}개, 전체 ${DATA_FILES.length}개${
+  )}개 로드 완료 (파일 ${loadedFiles} / ${DATA_FILES.length}개${
     skippedFiles ? `, 건너뜀 ${skippedFiles}개` : ""
   } · ${source})`;
   if (loadedFiles === 0) {

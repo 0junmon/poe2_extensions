@@ -205,7 +205,7 @@
     }
     console.info(
       "[poe 닌자 한글 검색]",
-      `"${query}" → 영어 id ${resolution.englishNames.length}개, 아이템 분류 ${resolution.itemClasses.length}개, 고유 아이템 ${resolution.uniqueItemIds.length}개`,
+      `"${query}" → 영어 id ${resolution.englishNames.length}개 / 아이템 분류 ${resolution.itemClasses.length}개 / 고유 아이템 ${resolution.uniqueItemIds.length}개`,
       {
         영어id: resolution.englishNames,
         아이템분류: resolution.itemClasses,

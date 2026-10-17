@@ -202,11 +202,11 @@ for (const stat of fileStats) {
   );
 }
 lines.push("");
-lines.push(`[중복 키] 총 ${duplicates.length}개 (값 충돌 ${conflictingDuplicates.length}개, 동일값 중복 ${redundantDuplicates.length}개)`);
+lines.push(`[중복 키] 총 ${duplicates.length}개 (값 충돌 ${conflictingDuplicates.length}개 / 동일값 중복 ${redundantDuplicates.length}개)`);
 lines.push("-- 값이 서로 다른(충돌) 중복 키 상위 40개 --");
 for (const item of conflictingDuplicates.slice(0, 40)) {
   lines.push(
-    `${item.key} => ${item.koValues.join(" | ")}  (${item.entries.join(", ")})`,
+    `${item.key} => ${item.koValues.join(" / ")}  (${item.entries.join(", ")})`,
   );
 }
 lines.push("");
