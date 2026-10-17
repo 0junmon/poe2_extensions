@@ -1,8 +1,12 @@
 @echo off
-rem 번역 데이터 폴더(poe2_translation_kr)의 코드를 이 저장소로 복사하고 커밋한다.
+rem [레거시] 데이터 폴더에 코드 원본(scripts\, userscripts\, chrome-extension\)이 있던 시절의 스크립트다.
+rem 현재는 코드 원본이 이 저장소(poe2_extensions)에만 있으므로 그대로 실행하면 소스를 찾지 못한다.
+rem 코드는 이 저장소에서 직접 수정하고 커밋한다. (자세한 내용: AGENTS.md 7절)
 rem
-rem   sync-from-project.cmd                  (기본 소스: ..\poe2_translation_kr, 없으면 ..\pobkr)
-rem   sync-from-project.cmd "D:\work\poe2_translation_kr"
+rem 번역 데이터 폴더(poe2_translation)의 코드를 이 저장소로 복사하고 커밋한다.
+rem
+rem   sync-from-project.cmd                  (기본 소스: ..\poe2_translation)
+rem   sync-from-project.cmd "D:\work\poe2_translation"
 rem
 rem 복사 대상
 rem   core\content.js      <- userscripts\poe-ninja-translation.user.js
@@ -14,13 +18,12 @@ setlocal enabledelayedexpansion
 set "DEST=%~dp0"
 set "SRC=%~1"
 if "%SRC%"=="" (
-  set "SRC=%~dp0..\pobkr"
-  if exist "%~dp0..\poe2_translation_kr\scripts\build_all.mjs" set "SRC=%~dp0..\poe2_translation_kr"
+  set "SRC=%~dp0..\poe2_translation"
 )
 
 if not exist "%SRC%\scripts\build_all.mjs" (
   echo [오류] 소스 프로젝트를 찾을 수 없습니다: "%SRC%"
-  echo        사용법: sync-from-project.cmd "D:\work\poe2_translation_kr"
+  echo        사용법: sync-from-project.cmd "D:\work\poe2_translation"
   exit /b 1
 )
 

@@ -1,8 +1,16 @@
 # Chrome extension
 
-1. Run `npm run build:extension` from the project root.
-2. Open `chrome://extensions` and enable Developer mode.
-3. Select **Load unpacked** and choose `dist/poe-ninja-korean`.
+> 코드 원본은 `poe2_extensions`입니다. `package.json`은 `pipeline/`에 있으므로
+> 빌드 명령은 그 폴더에서 실행합니다.
+
+1. Set the data root once per shell, then move to `pipeline/`:
+   ```powershell
+   $env:POBKR_ROOT = 'C:\Users\Administrator\Documents\poe2_translation'
+   cd C:\Users\Administrator\Documents\poe2_extensions\pipeline
+   ```
+2. Run `npm run build:extension` (output: `..\dist\poe-ninja-korean`).
+3. Open `chrome://extensions` and enable Developer mode.
+4. Select **Load unpacked** and choose `dist/poe-ninja-korean`.
 
 The generated extension includes the translation dictionaries, so it does not
 download translation data from GitHub when a poe.ninja page opens. Rebuild the
