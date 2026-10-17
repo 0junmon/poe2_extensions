@@ -1,11 +1,11 @@
 # poe2_extensions
 
 poe2 관련 확장 프로그램 코드 저장소(모노레포). 번역 데이터는 별도 저장소
-`https://github.com/jun1bh1/poe2_translation` (공개, `translations/**`)에 있고,
-확장 프로그램은 빌드 시 그 데이터를 `dist/`에 포함합니다.
+`https://github.com/jun1bh1/poe2_translation` (`translations/**`, 2026-10-17 기준 **비공개**)에
+있고, 확장 프로그램은 빌드 시 그 데이터를 `dist/`에 포함합니다.
 
-> 새 세션/새 에이전트는 먼저 [`AGENTS.md`](AGENTS.md)를 읽으세요. 현재 미커밋 상태,
-> 빌드 명령, 번역 규칙, 알려진 함정이 정리되어 있습니다.
+> 새 세션/새 에이전트는 먼저 [`AGENTS.md`](AGENTS.md)를 읽으세요. 빌드 명령,
+> 번역 규칙, 작업 상태, 알려진 함정(비공개 저장소로 인한 raw 404 포함)이 정리되어 있습니다.
 
 ## 구성
 
@@ -58,7 +58,10 @@ npm run build:all          # 전체 파이프라인 (build-all.cmd는 루트를 
 - `core/content.js`는 **엔진 단일 원본**입니다. 사이트별로 복사본을 만들지 말고 항상
   이 파일을 공유하세요(엔진을 고치면 모든 사이트 확장이 같은 내용을 쓰게 됩니다).
 - `DATA_BASE_URL`은 유저스크립트 폴백에서만 쓰는 외부 주소입니다. 현재 값은 데이터
-  커밋 `cc9d7d2…`를 가리킵니다. 번역을 더 커밋하면 그 새 해시로 이 줄을 갱신하고
-  `npm run build:extension`으로 `dist`를 다시 만들어야 합니다(`AGENTS.md` 7절).
+  커밋 `cc9d7d2…`를 가리키지만, **데이터 저장소가 비공개라 `raw.githubusercontent.com`
+  접근은 404**입니다. 폴백을 쓰려면 저장소를 Public으로 전환하거나 데이터를 공개
+  경로에 배포해야 합니다. 크롬 확장은 `dist`에 데이터를 포함하므로 영향이 없습니다.
+  번역을 더 커밋하면 그 새 해시로 이 줄을 갱신하고 `npm run build:extension`으로
+  `dist`를 다시 만드세요(`AGENTS.md` 7절).
 - `sync-from-project.cmd`는 데이터 폴더에 코드 원본(`scripts/`, `userscripts/`)이
   있던 시절의 스크립트입니다. 현재 구조에서는 그대로 실행하면 실패합니다.

@@ -127,15 +127,20 @@ npm run build:data-search  # -> ..\tools\data-search-data.js (file:// 용 내장
 
 ## 7. 알려진 함정 / 반드시 알아야 할 것
 
-1. **`DATA_BASE_URL` — 2026-10-17 갱신 완료**
+1. **`DATA_BASE_URL` — 해시는 갱신했지만 저장소가 비공개라 raw 접근은 404**
    - `core/content.js`와 `dist/.../content.js`가
      `.../poe2_translation/cc9d7d2b16669069e41578a549f1ff30865487be/translations/`를
      가리킨다. 이전 값 `4f5a742`는 폴더 구조 개편(`9c3604a`) 이전 커밋이라
      `translations/names/game_terms.json` 같은 새 경로가 없어 404가 났었다.
-   - 데이터 repo에 번역을 더 커밋하면 **그 새 커밋 해시로 이 줄을 다시 갱신**하고
-     `npm run build:extension`으로 `dist`를 재생성해야 한다.
-   - 크롬 확장은 `chrome.runtime.getURL('translations/...')`로 **로컬 dist 데이터**를
-     읽으므로 외부 다운로드가 없다. `DATA_BASE_URL`은 유저스크립트 폴백용이다.
+   - 그러나 `jun1bh1/poe2_translation`과 `jun1bh1/poe2_extensions`는 **PRIVATE**다
+     (2026-10-17 `gh repo view`로 확인). `raw.githubusercontent.com`은 인증 없이
+     접근하므로 해시가 맞아도 **404**가 난다. 이건 경로/해시 문제가 아니라 공개 범위 문제다.
+   - 유저스크립트 폴백을 살리려면 ① 저장소를 Public으로 전환, ② 데이터를 공개
+     저장소/GitHub Pages 등에 배포하고 주소를 변경, ③ 토큰 인증 추가(비권장) 중 하나가 필요하다.
+   - 크롬 확장은 `chrome.runtime.getURL('translations/...')`로 **dist에 포함된 데이터**를
+     읽으므로 저장소 공개 여부와 무관하게 동작한다.
+   - 데이터 repo에 번역을 더 커밋하면 (공개 전환 후에는) 그 새 커밋 해시로 이 줄을
+     다시 갱신하고 `npm run build:extension`으로 `dist`를 재생성해야 한다.
 2. **`POBKR_ROOT`는 레거시 이름**이다. `TRANSLATION_ROOT`로 바꾸려면
    "새 이름 우선 + `POBKR_ROOT` 폴백"으로 마이그레이션한다. 한 번에 바꾸면
    `build-all.cmd`, `project-root.mjs`, `build_all.mjs`, `source-root.mjs`가 깨진다.
@@ -156,12 +161,14 @@ npm run build:data-search  # -> ..\tools\data-search-data.js (file:// 용 내장
 1. 데이터 repo의 `translations/general/*.json` 3건 커밋·푸시 (`cc9d7d2`)
 2. 새 커밋 해시로 `core/content.js`의 `DATA_BASE_URL` 갱신 (repo 이름 포함)
 3. `npm run build:extension` / `npm run build:data-search` 재생성
-4. 코드 repo 변경(문서 + 엔진/파이프라인) 커밋·푸시 — 이 문서 갱신 직후 처리
+4. 코드 repo 변경(엔진/파이프라인 + 문서) 커밋·푸시
 
-남은 것(선택):
-1. `POBKR_ROOT` → `TRANSLATION_ROOT` 마이그레이션 (새 이름 우선 + 옛 이름 폴백)
-2. `sync-from-project.cmd`를 현재 구조에 맞게 재작성하거나 폐기 표시
-3. 번역을 추가 커밋할 때마다 `DATA_BASE_URL` 해시 갱신 + `build:extension` 재실행
+남은 것:
+1. **(결정 필요)** 유저스크립트 폴백을 살릴지: 데이터 저장소 Public 전환 또는 공개 배포 경로 도입.
+   현 상태(비공개)에서는 `DATA_BASE_URL`이 404다. 크롬 확장은 영향 없음.
+2. (선택) `POBKR_ROOT` → `TRANSLATION_ROOT` 마이그레이션 (새 이름 우선 + 옛 이름 폴백)
+3. (선택) `sync-from-project.cmd`를 현재 구조에 맞게 재작성하거나 폐기 표시
+4. 번역을 추가 커밋할 때마다 `DATA_BASE_URL` 해시 갱신 + `build:extension` 재실행
 
 ## 9. 검증 명령
 
