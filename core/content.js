@@ -730,47 +730,11 @@
     return allowList ? translateStatList(normalizedEnglish) : undefined;
   }
 
-  function translateEnglishText(value) {
-    const normalized = normalizeEnglish(value);
-    const exactTranslation = translations.get(normalized);
-    if (exactTranslation) {
-      return exactTranslation;
-    }
-
-    // "9.6m radius · 8s duration": the unit letter stays, "radius" becomes 반경.
-    const captionTranslation = translateCaptionFragment(normalized);
-    if (captionTranslation) {
-      return captionTranslation;
-    }
-
-    // A label is often printed with a colon ("Support Gem Requirements:", "Category:")
-    // while the data holds the bare term, so the colon form is looked up separately.
-    if (normalized.endsWith(":")) {
-      const withoutColon = normalized.slice(0, -1).trim();
-      const label =
-        translations.get(withoutColon) ?? translateStatText(withoutColon, false);
-      if (label) {
-        return `${label}:`;
-      }
-    }
-
-    const statTranslation = translateStatText(normalized);
-    if (statTranslation) {
-      return statTranslation;
-    }
-
-    const composedTranslation = translateComposedStatText(normalized);
-    if (composedTranslation) {
-      return composedTranslation;
-    }
-
-    const nameListTranslation = translateNameList(value, normalized);
-    if (nameListTranslation) {
-      return nameListTranslation;
-    }
-
+  // A `{0}`/`{1}` row (for example base_items' "Companion: {0}") is more
+  // specific than splitting the line on ": ", so try it before that split.
+  function translateTranslationTemplate(normalizedEnglish) {
     for (const template of translationTemplates) {
-      const match = normalized.match(template.pattern);
+      const match = normalizedEnglish.match(template.pattern);
       if (!match) {
         continue;
       }
@@ -819,6 +783,52 @@
       if (complete) {
         return result;
       }
+    }
+    return undefined;
+  }
+
+  function translateEnglishText(value) {
+    const normalized = normalizeEnglish(value);
+    const exactTranslation = translations.get(normalized);
+    if (exactTranslation) {
+      return exactTranslation;
+    }
+
+    // "9.6m radius · 8s duration": the unit letter stays, "radius" becomes 반경.
+    const captionTranslation = translateCaptionFragment(normalized);
+    if (captionTranslation) {
+      return captionTranslation;
+    }
+
+    // A label is often printed with a colon ("Support Gem Requirements:", "Category:")
+    // while the data holds the bare term, so the colon form is looked up separately.
+    if (normalized.endsWith(":")) {
+      const withoutColon = normalized.slice(0, -1).trim();
+      const label =
+        translations.get(withoutColon) ?? translateStatText(withoutColon, false);
+      if (label) {
+        return `${label}:`;
+      }
+    }
+
+    const templateTranslation = translateTranslationTemplate(normalized);
+    if (templateTranslation) {
+      return templateTranslation;
+    }
+
+    const statTranslation = translateStatText(normalized);
+    if (statTranslation) {
+      return statTranslation;
+    }
+
+    const composedTranslation = translateComposedStatText(normalized);
+    if (composedTranslation) {
+      return composedTranslation;
+    }
+
+    const nameListTranslation = translateNameList(value, normalized);
+    if (nameListTranslation) {
+      return nameListTranslation;
     }
 
     const levelMatch = normalized.match(/^level (\d+) (.+)$/);
