@@ -9,3 +9,5 @@ data/
 # 로컬 생성물 / 테스트 페이지
 tools/data-search-data.js
 tools/ninja-test.html
+__pycache__/
+*.pyc
