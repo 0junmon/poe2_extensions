@@ -134,7 +134,7 @@ for (const folder of folders) {
   console.log(
     `  lang 마커: ${languages.size === 0 ? "없음" : [...languages.entries()].map(([key, count]) => `${key}(${count})`).join(", ")}`,
   );
-  console.log(`  한글이 들어 있는 파일: ${koreanLines.size} / ${csdFiles.length}`);
+  console.log(`  한글이 들어 있는 파일: ${koreanLines.size}개, 전체 ${csdFiles.length}개`);
   console.log(
     `  블록 키워드(상위 12): ${[...keywords.entries()]
       .sort((a, b) => b[1] - a[1])

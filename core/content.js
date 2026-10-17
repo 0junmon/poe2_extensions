@@ -74,7 +74,8 @@
   // without data stays in English instead of turning the whole row into a half translation.
   const LIST_PART_MAX_LENGTH = 40;
   const LIST_PART_MAX_WORDS = 5;
-  // A list separates its parts with a comma, a middle dot, or a slash ("Fire / Cold").
+  // Input lists may use a comma, a middle dot, or a slash ("Fire / Cold").
+  // A slash is kept for compatibility when matching, but the output uses a middle dot.
   const LIST_SEPARATORS = [", ", " · ", " / "];
   // Templates that start with a value are grouped under this key instead of a word.
   const VALUE_FIRST_PREFIX = "\u0000";
@@ -658,7 +659,8 @@
     if (!word) {
       return undefined;
     }
-    return `${match[1] ? `${match[1]} ` : ""}${word}${match[3] ?? ""}`;
+    const suffix = (match[3] ?? "").replace("/", "·");
+    return `${match[1] ? `${match[1]} ` : ""}${word}${suffix}`;
   }
   // A comma or dot separated list of names and values ("Dire Gorget, Absent Amulet",
   // "Fire Damage · 38,150") is translated part by part. A part without data is kept in English
@@ -696,7 +698,10 @@
       translatedCount += 1;
       return translatedPart;
     });
-    return translatedCount > 0 ? translatedParts.join(separator) : undefined;
+    const outputSeparator = separator === " / " ? " · " : separator;
+    return translatedCount > 0
+      ? translatedParts.join(outputSeparator)
+      : undefined;
   }
 
   function translateStatList(normalizedEnglish) {

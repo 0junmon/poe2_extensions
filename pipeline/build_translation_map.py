@@ -724,7 +724,7 @@ def main() -> None:
     print(
         f"Item class singulars: {class_counts['custom'] + class_counts['generated']} classes "
         f"({class_counts['custom']} from custom entries, "
-        f"{class_counts['generated']} from the plural/category rule) / "
+        f"{class_counts['generated']} from the plural/category rule) | "
         f"generated pairs: {len(singular_report['generated'])} (singular != plural)"
     )
     for line in singular_report["overrides"]:

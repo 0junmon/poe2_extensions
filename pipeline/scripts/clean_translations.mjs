@@ -321,14 +321,14 @@ const report = [
   `  1) ko 안의 "(id)" 괄호 제거 : ${parenStrippedCount}행`,
   `  2) id == ko 항목 제거        : ${identicalCount}행`,
   `  3) table 필드 제거           : 배열 파일 전체`,
-  `  4) 키 중복 병합              : ${mergedKeys}키 / ${mergedRows}행 제거`,
+  `  4) 키 중복 병합              : ${mergedKeys}키, ${mergedRows}행 제거`,
   `  5) "[...]" 마크업 정리        : ${markupStrippedCount}행`,
   "",
   `[값이 갈린 키 ${conflicts.length}개 · 상위 30]`,
 ];
 for (const conflict of conflicts.slice(0, 30)) {
   report.push(
-    `  ${conflict.key} => ${conflict.kept} (${conflict.keptFile})  |  버림: ${conflict.droppedValues.join(" / ")} (${conflict.droppedFiles.join(", ")})`,
+    `  ${conflict.key} => ${conflict.kept} (${conflict.keptFile})  |  버림: ${conflict.droppedValues.join(" | ")} (${conflict.droppedFiles.join(", ")})`,
   );
 }
 report.push("", "[파일별 항목 수]");

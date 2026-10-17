@@ -448,7 +448,7 @@ for (const decision of corrections) {
   for (const row of decision.dropped) {
     lines.push(`  제거: ${row.ko} (${row.fileName}:${row.id})`);
   }
-  lines.push(`  공식 한글: ${decision.officialKorean.join(" / ")}`);
+  lines.push(`  공식 한글: ${decision.officialKorean.join(" | ")}`);
 }
 lines.push("");
 lines.push(`[확장 표시값 변경 ${effectiveChanges.length}건]`);
@@ -475,10 +475,10 @@ for (const decision of redundantRemovals.slice(0, 80)) {
   ].join(", ");
   const valueNote =
     decision.koValues.length > 1
-      ? ` / 값 차이: ${decision.koValues.join(" | ")}`
+      ? ` | 값 차이: ${decision.koValues.join(" | ")}`
       : "";
   lines.push(
-    `* ${decision.key} [${decision.table}] 유지: ${decision.keeper.fileName} "${decision.keeper.ko}" / 제거: ${droppedFiles}${valueNote}`,
+    `* ${decision.key} [${decision.table}] 유지: ${decision.keeper.fileName} "${decision.keeper.ko}" | 제거: ${droppedFiles}${valueNote}`,
   );
 }
 if (errors.length > 0) {
