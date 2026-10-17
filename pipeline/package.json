@@ -9,7 +9,6 @@
     "translations/"
   ],
   "scripts": {
-    "test": "node --test",
     "build:extension": "node scripts/build_chrome_extension.mjs",
     "build:trade-stats": "node scripts/build_trade_stats.mjs",
     "build:skill-lines": "node scripts/build_skill_lines.mjs",
@@ -21,18 +20,10 @@
     "build:translation-map": "python build_translation_map.py",
     "build:all": "node scripts/build_all.mjs",
     "build:unique-items": "node scripts/build_unique_items.mjs",
-    "verify:trade-stats": "node scripts/verify_trade_stats.mjs",
-    "verify:skill-lines": "node scripts/verify_skill_lines.mjs",
-    "verify:audit-strings": "node scripts/verify_audit_strings.mjs",
-    "verify:audit-pages": "node scripts/verify_audit_pages.mjs",
-    "verify:data-search": "node scripts/verify_data_search.mjs",
     "build:data-search": "node scripts/build_data_search_bundle.mjs",
     "analyze:duplicates": "node scripts/analyze_duplicates.mjs",
     "clean:translations": "node scripts/clean_translations.mjs",
     "inspect:csd": "node scripts/inspect_csd.mjs",
     "crawl:unique-bases": "node scripts/crawl_unique_bases.mjs"
-  },
-  "devDependencies": {
-    "playwright": "^1.64.1"
   }
 }

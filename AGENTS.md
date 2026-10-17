@@ -65,8 +65,8 @@ npm run build:data-search  # -> ..\tools\data-search-data.js (file:// 용 내장
 ```
 
 - `package.json`은 **`pipeline/` 안에만** 있다. `poe2_extensions` 루트에는 없다.
-- `npm install`은 `pipeline/`에서 한다. 빌드 스크립트 자체는 내장 모듈만 쓰고,
-  `playwright`는 `verify:*`/`test-page-search` 계열에서만 필요하다.
+- 빌드/패키징 스크립트는 **Node 내장 모듈만** 사용한다. 외부 의존성이 없으므로
+  `npm install`이 필요 없다(Playwright 기반 자동 검증은 제거됨).
 - `build:extension`은 코드 루트(`sites`가 있는 폴더)의 `dist/poe-ninja-korean`에
   `manifest.json`, `content.js`(= `core/content.js`), `page_search.js`,
   `translations/**` 18개 파일을 복사한다.
@@ -126,7 +126,7 @@ npm run build:data-search  # -> ..\tools\data-search-data.js (file:// 용 내장
 - `dist/`는 생성물이다. 직접 고치지 말고 `npm run build:extension`으로 다시 만든다.
 - `tools/data-search-data.js`(약 6.5MB)는 `npm run build:data-search` 생성물이다.
   `tools/data-search.html`을 `file://`로 열 때 fetch 대신 쓰는 번들이다.
-- `tools/ninja-test.html`, `pipeline/scripts/test-page-search.mjs`는 로컬 확인용이다.
+- `tools/ninja-test.html`은 로컬 확인용 페이지다(저장소에는 올리지 않음).
 
 ## 7. 알려진 함정 / 반드시 알아야 할 것
 
@@ -172,19 +172,19 @@ npm run build:data-search  # -> ..\tools\data-search-data.js (file:// 용 내장
 1. `POBKR_ROOT` → `TRANSLATION_ROOT` 마이그레이션 (새 이름 우선 + 옛 이름 폴백)
 2. `sync-from-project.cmd`를 현재 구조에 맞게 재작성하거나 폐기 표시
 
-## 9. 검증 명령
+## 9. 검증
+
+자동 브라우저 테스트(Playwright)는 제거했다. 아래의 의존성 없는 검사와 **수동 확인**만 쓴다.
 
 ```powershell
 # JSON 유효성 (데이터 repo 루트에서)
 node -e "for (const f of ['translations/general/custom.json','translations/general/keyword.json','translations/general/poe_ninja.json']) { const j=JSON.parse(require('fs').readFileSync(f,'utf8')); console.log(f, Array.isArray(j)?j.length:Object.keys(j).length, 'OK'); }"
 
-# 파이프라인 검증 (playwright 필요)
-cd C:\Users\Administrator\Documents\poe2_extensions\pipeline
-npm run verify:data-search
-npm run verify:skill-lines
-npm run verify:trade-stats
+# 빌드 + ZIP (코드 repo)
+cd C:\Users\Administrator\Documents\poe2_extensions\sites\ninja
+.\package-extension.ps1
 ```
 
-수동 확인: `dist/poe-ninja-korean`을 `chrome://extensions`에서 Load unpacked →
-poe.ninja/poe2 페이지에서 번역/검색이 되는지, 콘솔에 404가 없는지 본다.
+수동 확인: `chrome://extensions` → **Load unpacked** → `dist\poe-ninja-korean` →
+`poe.ninja/poe2` 페이지에서 번역/검색이 되는지, 콘솔에 오류/404가 없는지 본다.
 

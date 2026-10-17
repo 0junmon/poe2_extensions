@@ -18,7 +18,7 @@ sites/                 사이트별 확장 코드
                        PUBLISHING.md, package-extension.ps1 (배포)
   filter/              poe2 filter 사이트 확장 (같은 구성으로 추가)
 pipeline/              번역 데이터 생성 도구 + package.json (npm 명령은 여기서 실행)
-  scripts/             build_*.mjs, verify_*.mjs
+  scripts/             build_*.mjs, analyze/clean/inspect 도구
 tools/                 로컬 도구 (index.js, data-search*.js/html)
 dist/                  빌드 산출물 — 직접 수정하지 않음
 ```
@@ -41,7 +41,8 @@ npm run build:data-search  # -> ..\tools\data-search-data.js
 npm run build:all          # 전체 파이프라인 (build-all.cmd는 루트를 자동 설정)
 ```
 
-- `npm install`은 `pipeline/`에서 실행합니다. `playwright`는 `verify:*` 계열에서만 필요합니다.
+- 외부 의존성이 없어 `npm install`이 필요 없습니다. Playwright 기반 자동 검증은
+  제거했고, 테스트는 `dist/poe-ninja-korean`을 Load unpacked로 직접 확인합니다.
 - `dist/`를 새로 만든 뒤 `chrome://extensions`에서 확장을 Reload하고 페이지를
   완전히 새로고침해야 반영됩니다.
 - `dist/`, `tools/data-search-data.js`는 생성물입니다. 직접 고치지 마세요.

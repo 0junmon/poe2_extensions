@@ -179,9 +179,8 @@ uses the values in another order (`Recovers {0} Life over {1} Seconds` → `{1}�
 values back through `koreanValueOrder`, so `Recovers 1793 Life over 3 Seconds` becomes
 `3초 동안 1793 생명력 회복` and not `1793초 동안 3 생명력 회복`.
 
-`npm run verify:trade-stats` renders those cases in Chromium with the real data
-(single text node and split `<span>`s, plus the toggle) and prints what it
-checked.
+Those cases can be checked manually on poe.ninja with the extension loaded
+(single text node and split `<span>`s, plus the toggle).
 
 
 ## Skill gem lines
@@ -217,9 +216,9 @@ Tooltip lines are often composed, so the content script also translates the part
 bracketed range as well, so `Level: (1—20)` → `레벨: (1~20)` and
 `Attack Damage: (100—312)% of base` → `공격 피해: 기본 수치의 (100~312)%`.
 
-`npm run verify:skill-lines` renders the Boneshatter tooltip in Chromium and prints
-which lines are covered: **25 of its 26 lines are translated today**. The last one
-(`Requires: Level (1—90), (4—157) Str`) is composed by the game UI from several parts.
+With the extension loaded, the Boneshatter tooltip shows **25 of its 26 lines translated**
+(checked manually). The last one (`Requires: Level (1—90), (4—157) Str`) is composed by the
+game UI from several parts.
 
 ## Stat description lines (.csd)
 
@@ -276,10 +275,9 @@ poe.ninja writes the current place as `<area> - <quest>`
 two sides of a `" - "` line and translates each of them (`죽음의 전당 - 나마후의 시험`),
 next to the existing `": "` (label and value) and `", "` (list) forms.
 
-`npm run verify:audit-pages` loads the saved poe.ninja audit pages with the content
-script injected and prints the English text nodes that are still untranslated
-(`npm run verify:audit-strings` only asks the lookup for the single audit strings, where
-a split line stays English as fragments, so it reports far more).
+To check the saved poe.ninja audit pages, load the extension and open them manually; look
+for English text nodes that are still untranslated. A split line may stay partly English
+as fragments, so compare whole lines rather than individual fragments.
 
 ## Item description lines
 
@@ -339,13 +337,11 @@ payload (`entries`, `uniqueNames`, `itemClassUniqueItems`).
   `localStorage.setItem("poe-ninja-korean-search-log", "0")` on poe.ninja to
   silence that output.
 
-`npm test` runs `scripts/test-page-search.mjs`, which loads the real
-`page_search.js` and `poe-ninja-translation.user.js` in sandboxes and checks
-these rules against the current `translations/` data.
+These rules are checked manually with the extension loaded.
 
 ## Duplicate diagnostics
 
-Local-only tool (no browser needed): it mirrors the userscript load order, groups the keys that
+Local-only tool (no browser needed): it mirrors the extension load order, groups the keys that
 exist in more than one file/table, shows which value the extension resolves today and compares
 it with the official Korean from the balance dumps.
 
@@ -442,8 +438,7 @@ python -m http.server 8000
 
 Then open `http://localhost:8000/korean-search.html` and type a query such as
 `고`, `고유`, `방패` or `알켐 에이라`.
-`scripts/test-page-search.mjs` verifies that `search-payload.js` and the
-userscript publish identical payloads.
+`search-payload.js` rebuilds the same payload that the extension publishes.
 
 `data-search.html` (with `data-search.js`, `data-search-files.js` and the generated
 `data-search-data.js`) is the data browser: it loads every file of `translations/` and searches
@@ -459,8 +454,8 @@ in bold. Open `http://localhost:8000/data-search.html` and try `Gem Level` (완�
 `npm run build:data-search` writes `data-search-data.js`, the whole data set as one internal
 script, so the page also works when it is opened by a double click (`file://`) — no local
 server needed. The status line then says `내장 데이터 … (생성 시각)`; rerun the command after
-editing `translations/`. `npm run verify:data-search` drives the page in Chromium over http and
-over `file://` against the current data.
+editing `translations/`. Check both `http://localhost:8000/data-search.html` and the `file://`
+version manually after rebuilding.
 
 In the devtools console, both on poe.ninja and on the demo page,
 `__poeNinjaKoreanSearch.resolveKoreanQuery("방패")` returns the raw resolution

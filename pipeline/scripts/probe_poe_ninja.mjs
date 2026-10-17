@@ -4,7 +4,7 @@ import { resolveProjectRoot } from "./project-root.mjs";
 import { fileURLToPath } from "node:url";
 
 // Local-only probe: checks how poe.ninja serves its PoE 2 build pages so we can
-// decide whether a Playwright crawl or API harvesting is the right approach.
+// decide whether a browser crawl or API harvesting is the right approach.
 const projectRoot = resolveProjectRoot(import.meta.url);
 const targetUrl =
   process.argv[2] ?? "https://poe.ninja/poe2/builds/forbiddenrites";

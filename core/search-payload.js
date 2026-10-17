@@ -1,8 +1,6 @@
-// Rebuilds the search payload that userscripts/poe-ninja-translation.user.js
-// sends to chrome-extension/page_search.js, so browser demos such as
-// korean-search.html can exercise the real extension search logic without an
-// extension reload. scripts/test-page-search.mjs asserts that this module and
-// the userscript produce identical payloads.
+// Rebuilds the search payload that content.js sends to page_search.js, so
+// browser demos such as korean-search.html can exercise the real extension
+// search logic without an extension reload.
 
 const CORE_DATA_FILES = [
   "names/game_terms.json",
