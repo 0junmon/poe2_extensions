@@ -936,6 +936,28 @@
     return nodes;
   }
 
+  // A direct child can be a plain text span, or a single colour/tooltip wrapper
+  // around its text. Anything more deeply nested must be left to the per-node
+  // pass, because rebuilding it would change the wrapper/punctuation structure.
+  function isSimpleLineSpan(span) {
+    if (!(span instanceof Element) || span.tagName !== "SPAN") {
+      return false;
+    }
+    if (span.children.length === 0) {
+      return true;
+    }
+    if (span.children.length !== 1) {
+      return false;
+    }
+    const child = span.children[0];
+    if (child.tagName !== "SPAN" || child.children.length !== 0) {
+      return false;
+    }
+    return [...span.childNodes].every(
+      (node) => node.nodeType !== Node.TEXT_NODE || !node.nodeValue.trim(),
+    );
+  }
+
   // poe.ninja renders one attribute line as several <span>s: the value stays in
   // a plain <span> while the keywords inside the line are tooltip triggers, e.g.
   //   <div><span>30% increased </span><span>Charm</span><span> Charges gained</span></div>
@@ -953,12 +975,10 @@
     const children = [...element.children];
     if (
       children.length < 2 ||
-      // Rebuilding a line whose spans contain nested spans (tooltip/style
-      // wrappers) loses the nesting and the surrounding punctuation. Leave
-      // those lines to the per-text-node pass, which preserves the wrappers.
-      !children.every(
-        (child) => child.tagName === "SPAN" && child.children.length === 0,
-      ) ||
+      // Plain text spans and single colour/tooltip wrappers are safe to rebuild.
+      // Deeper nesting is left to the per-text-node pass so wrappers and
+      // punctuation stay intact.
+      !children.every(isSimpleLineSpan) ||
       // A line is made of inline spans only; anything else (a card with several
       // lines, links, images) is left to the normal text node translation.
       [...element.querySelectorAll("*")].some((node) => node.tagName !== "SPAN")
@@ -1319,6 +1339,12 @@
         .join("");
       const candidates = keywordCandidates(original);
       const trimmed = original.trim();
+      // The wrapper may own trailing punctuation ("Quality:") or a leading
+      // comma (", Two Hand Mace"); look up the clean term as well.
+      const cleaned = trimmed.replace(/^[\s,;:]+|[\s,;:]+$/g, "");
+      if (cleaned && cleaned !== trimmed) {
+        candidates.push(...keywordCandidates(cleaned));
+      }
       if (trimmed && NUMERIC_VALUE_PATTERN.test(trimmed)) {
         candidates.push(trimmed, formatStatValue(trimmed));
       }
