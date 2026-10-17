@@ -4,7 +4,7 @@
 
 새 세션/새 에이전트는 이 파일을 먼저 읽고, 그다음 `README.md`와
 `sites/ninja/INSTALL.md`를 읽는다. 이 문서는 "지금 실제로 어떻게 동작하는지"만 적는다.
-과거 문서에 남은 `pobkr`, `poe2_translation_kr`, `userscripts/`, `chrome-extension/`
+과거 문서에 남은 `pobkr`, `userscripts/`, `chrome-extension/`
 경로는 **레거시**이며 현재 데이터 폴더에는 존재하지 않는다.
 
 ## 0. 새 에이전트 시작 체크리스트
@@ -48,8 +48,8 @@
 
 - 데이터 폴더의 `data/`(게임 덤프, `.csd` 추출물, 백업)는 `.gitignore` 대상이라
   GitHub에 올라가지 않는다. 로컬에만 있다(약 315MB + `data/statdescriptions` 589파일).
-- 2026-10-17에 데이터 폴더 이름을 `poe2_translation_kr` → `poe2_translation`으로 바꿨다.
-  Git 히스토리와 리모트는 새 이름 그대로 유지된다. 옛 폴더는 더 이상 없다.
+- 2026-10-17에 데이터 폴더 이름을 `poe2_translation`으로 바꿨다.
+  Git 히스토리와 리모트는 새 이름 그대로 유지된다. 옛 이름의 폴더는 더 이상 없다.
 - **코드 원본은 `poe2_extensions`에만 있다.** 데이터 폴더에는 `scripts/`,
   `userscripts/`, `chrome-extension/`, `index.js`, `package.json`이 없다.
   따라서 "데이터 폴더에서 스크립트를 실행한다"는 옛 설명은 더 이상 맞지 않는다.
@@ -184,7 +184,7 @@ npm run verify:data        # JSON/템플릿/우선순위/dist 동기화 검사 (
    `../userscripts`)는 현재 존재하지 않으므로 모노레포 후보가 선택된다.
 5. `data/balance`는 1,024개 파일 약 315MB, `data/statdescriptions`는 `.csd` 589개다.
    `stat_lines.json`(25,730행)은 이 `.csd`에서 생성됐다.
-6. 문서에 남은 `pobkr`, `poe2_translation_kr` 표기는 레거시이므로 새 경로로 고친다.
+6. 문서에 남은 `pobkr` 표기는 레거시이므로 가능한 한 새 이름으로 고친다.
 
 ## 8. 작업 상태 (2026-10-17 기준)
 

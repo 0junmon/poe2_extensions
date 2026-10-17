@@ -23,8 +23,8 @@ tools/                 로컬 도구 (index.js, data-search*.js/html)
 dist/                  빌드 산출물 — 직접 수정하지 않음
 ```
 
-- 2026-10-17에 데이터 폴더 이름이 `poe2_translation_kr` → `poe2_translation`으로
-  바뀌었습니다. 이 저장소의 코드가 원본이며, 데이터 폴더에는 `scripts/`,
+- 2026-10-17에 데이터 폴더 이름을 `poe2_translation`으로 바꿨습니다. 옛 이름의
+  폴더는 더 이상 없습니다. 이 저장소의 코드가 원본이며, 데이터 폴더에는 `scripts/`,
   `userscripts/`, `chrome-extension/`이 더 이상 없습니다.
 
 ## 빌드
