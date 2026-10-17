@@ -16,9 +16,9 @@
    git clone https://github.com/jun1bh1/poe2_translation.git
    git clone https://github.com/jun1bh1/poe2_extensions.git
    ```
-3. 두 저장소가 클린인지, HEAD가 맞는지 확인한다.
-   - 데이터: `69c9e53` (`Fix Legacy translation placeholder`)
-   - 코드: `6d33317` (`Add dependency-free translation rule checks`)
+3. 두 저장소가 클린인지 확인한다. `git status -sb`가
+   `## master...origin/main` / `## master...origin/master`이고 ahead/behind가 없어야 한다.
+   최신 커밋은 `git log --oneline -1`로 확인한다(문서에 해시를 고정하지 않는다).
 4. **`data/`는 Git에 없다.** 다른 PC라면 원본 PC에서 직접 복사해야 한다.
    - `poe2_translation/data/balance` (1,024개, 약 315MB)
    - `poe2_translation/data/statdescriptions` (`.csd` 589개)
@@ -53,8 +53,8 @@
 
 ## 2. 2026-10-17 작업 시작 시점 상태 (기록)
 
-> 이 절은 당시 상태 기록이다. 2026-10-17 최종 상태는 두 저장소 모두 클린이며
-> 데이터 HEAD `69c9e53`, 코드 HEAD `6d33317`이다.
+> 이 절은 당시 상태 기록이다. 최신 HEAD와 변경 여부는 `git log --oneline -1`과
+> `git status -sb`로 확인한다.
 
 데이터 repo:
 - HEAD `9c3604a` (`Restructure translations into general/items/names/lines`), `master` = `origin/main`
@@ -186,11 +186,11 @@ npm run verify:data        # JSON/템플릿/우선순위/dist 동기화 검사 (
 ## 8. 작업 상태 (2026-10-17 기준)
 
 완료:
-1. 데이터 repo 번역 커밋·푸시 (`cc9d7d2`), `Legacy` 자리표시자 수정 (`69c9e53`)
+1. 데이터 repo 번역 커밋·푸시, `Legacy` 자리표시자 수정
 2. 크롬 확장 단일 배포로 전환: 유저스크립트 폴백(`DATA_BASE_URL`) 제거
 3. Playwright 검증 제거, 의존성 없는 `npm run verify:data` 추가
 4. `npm run build:extension` / `npm run build:data-search` 재생성
-5. 코드 repo 변경(엔진/파이프라인 + 문서 + 검사 스크립트) 커밋·푸시 (`6d33317`)
+5. 코드 repo 변경(엔진/파이프라인 + 문서 + 검사 스크립트) 커밋·푸시
 6. `dist/poe-ninja-korean-v0.6.24.zip` 생성
 
 남은 것(배포):
