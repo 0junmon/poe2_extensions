@@ -936,28 +936,6 @@
     return nodes;
   }
 
-  // A direct child can be a plain text span, or a single colour/tooltip wrapper
-  // around its text. Anything more deeply nested must be left to the per-node
-  // pass, because rebuilding it would change the wrapper/punctuation structure.
-  function isSimpleLineSpan(span) {
-    if (!(span instanceof Element) || span.tagName !== "SPAN") {
-      return false;
-    }
-    if (span.children.length === 0) {
-      return true;
-    }
-    if (span.children.length !== 1) {
-      return false;
-    }
-    const child = span.children[0];
-    if (child.tagName !== "SPAN" || child.children.length !== 0) {
-      return false;
-    }
-    return [...span.childNodes].every(
-      (node) => node.nodeType !== Node.TEXT_NODE || !node.nodeValue.trim(),
-    );
-  }
-
   // poe.ninja renders one attribute line as several <span>s: the value stays in
   // a plain <span> while the keywords inside the line are tooltip triggers, e.g.
   //   <div><span>30% increased </span><span>Charm</span><span> Charges gained</span></div>
@@ -975,10 +953,7 @@
     const children = [...element.children];
     if (
       children.length < 2 ||
-      // Plain text spans and single colour/tooltip wrappers are safe to rebuild.
-      // Deeper nesting is left to the per-text-node pass so wrappers and
-      // punctuation stay intact.
-      !children.every(isSimpleLineSpan) ||
+      !children.every((child) => child.tagName === "SPAN") ||
       // A line is made of inline spans only; anything else (a card with several
       // lines, links, images) is left to the normal text node translation.
       [...element.querySelectorAll("*")].some((node) => node.tagName !== "SPAN")
@@ -1021,11 +996,6 @@
     // poe.ninja marks the keywords of a line with `data-tooltip-trigger`; putting the Korean
     // line back into the same spans keeps those hover tooltips working.
     if (distributeTranslatedLine(element, translated)) {
-      return;
-    }
-    // Never remove tooltip spans when the line cannot be distributed safely.
-    // The per-node pass below can still translate the keyword inside the span.
-    if (element.querySelector("[data-tooltip-trigger]")) {
       return;
     }
     // The whole line goes into the first text node and the other nodes are
@@ -1243,9 +1213,6 @@
     if (applyInlineLineWithValues(element, english, translated)) {
       return;
     }
-    if (element.querySelector("[data-tooltip-trigger]")) {
-      return;
-    }
     nodes[0].nodeValue = translated;
     for (let index = 1; index < nodes.length; index += 1) {
       nodes[index].nodeValue = "";
@@ -1327,130 +1294,77 @@
     return best;
   }
 
-  // poe.ninja marks keywords with `data-tooltip-trigger` and values often live in
-  // their own span. Put the Korean line back into those spans, including numeric
-  // values, so the original order can change (`Level 66` -> `66레벨`) without
-  // losing the value or the tooltip span. Returns false when nothing can be
-  // anchored safely.
+  // poe.ninja marks the keywords of a line with `data-tooltip-trigger` and underlines them.
+  // Writing the whole translation into the first span would empty those spans and kill
+  // their tooltips, so the Korean line is put back into the original spans: each keyword
+  // span receives the Korean word that replaced its English word, the surrounding text
+  // stays in the plain spans. Returns false when the line has no keyword to anchor.
   function distributeTranslatedLine(element, translated) {
     const entries = [...element.children].map((span) => {
       const original = textNodesOf(span)
         .map((node) => originalTextByNode.get(node) ?? node.nodeValue ?? "")
         .join("");
-      const candidates = keywordCandidates(original);
-      const trimmed = original.trim();
-      // The wrapper may own trailing punctuation ("Quality:") or a leading
-      // comma (", Two Hand Mace"); look up the clean term as well.
-      const cleaned = trimmed.replace(/^[\s,;:]+|[\s,;:]+$/g, "");
-      if (cleaned && cleaned !== trimmed) {
-        candidates.push(...keywordCandidates(cleaned));
-      }
-      if (trimmed && NUMERIC_VALUE_PATTERN.test(trimmed)) {
-        candidates.push(trimmed, formatStatValue(trimmed));
-      }
-      return { span, candidates: [...new Set(candidates)] };
+      // Whenever the span has its own Korean word it can be anchored, no matter whether the
+      // page marked it as a tooltip trigger.
+      return { span, candidates: keywordCandidates(original) };
     });
     if (!entries.some((entry) => entry.candidates.length > 0)) {
       return false;
     }
-
-    const used = [];
-    const anchors = [];
-    for (const entry of entries) {
-      let best;
-      for (const candidate of entry.candidates) {
-        let from = 0;
-        while (from <= translated.length) {
-          const at = translated.indexOf(candidate, from);
-          if (at < 0) {
-            break;
-          }
-          const end = at + candidate.length;
-          const overlaps = used.some(
-            (range) => at < range.end && end > range.start,
-          );
-          if (
-            !overlaps &&
-            (!best ||
-              at < best.at ||
-              (at === best.at && candidate.length > best.text.length))
-          ) {
-            best = { at, end, text: candidate };
-          }
-          from = at + 1;
-        }
-      }
-      if (best) {
-        used.push({ start: best.at, end: best.end });
-        anchors.push({ entry, ...best });
-      }
-    }
-    if (anchors.length === 0) {
-      return false;
-    }
-    anchors.sort((a, b) => a.at - b.at);
-
-    const nonAnchors = entries.filter(
-      (entry) => !anchors.some((anchor) => anchor.entry === entry),
-    );
-    const sequence = [];
+    const replacements = new Map();
     let cursor = 0;
-    let nonAnchorIndex = 0;
-    const pushGap = (text) => {
-      if (!text) {
-        return;
+    let gapTarget = null;
+    for (const entry of entries) {
+      if (entry.candidates.length > 0) {
+        const found = findKeywordInLine(entry.candidates, translated, cursor);
+        if (found) {
+          if (gapTarget) {
+            replacements.set(
+              gapTarget,
+              (replacements.get(gapTarget) ?? "") + translated.slice(cursor, found.at),
+            );
+          }
+          replacements.set(entry.span, found.text);
+          cursor = found.at + found.text.length;
+        }
+        // Not found in the Korean line (another wording): the span stays empty and its
+        // text remains part of the surrounding text.
+        gapTarget = null;
+        continue;
       }
-      const entry = nonAnchors[nonAnchorIndex];
-      if (entry) {
-        nonAnchorIndex += 1;
-        sequence.push({ element: entry.span, text });
-      } else {
-        sequence.push({ text });
+      if (!gapTarget) {
+        gapTarget = entry.span;
       }
-    };
-    for (const anchor of anchors) {
-      pushGap(translated.slice(cursor, anchor.at));
-      sequence.push({ element: anchor.entry.span, text: anchor.text });
-      cursor = anchor.end;
     }
-    pushGap(translated.slice(cursor));
-    for (; nonAnchorIndex < nonAnchors.length; nonAnchorIndex += 1) {
-      sequence.push({ element: nonAnchors[nonAnchorIndex].span, text: "" });
-    }
-
-    if (!originalChildOrderByElement.has(element)) {
-      originalChildOrderByElement.set(element, [...element.childNodes]);
+    const tail = translated.slice(cursor);
+    if (tail) {
+      const target = gapTarget ?? entries[entries.length - 1].span;
+      replacements.set(target, (replacements.get(target) ?? "") + tail);
     }
     for (const node of textNodesOf(element)) {
       if (!originalTextByNode.has(node)) {
         originalTextByNode.set(node, node.nodeValue);
       }
     }
-    const newChildren = [];
-    for (const part of sequence) {
-      if (part.element) {
-        const spanNodes = textNodesOf(part.element);
-        if (spanNodes.length === 0) {
-          if (part.text) {
-            const node = document.createTextNode(part.text);
-            part.element.appendChild(node);
-            originalTextByNode.set(node, "");
-          }
-          newChildren.push(part.element);
+    for (const entry of entries) {
+      const text = replacements.get(entry.span) ?? "";
+      const spanNodes = textNodesOf(entry.span);
+      if (spanNodes.length === 0) {
+        // An empty span ("<span></span>" in front of the line) needs a text node before the
+        // text that belongs there can be written; its English original is empty.
+        if (!text) {
           continue;
         }
-        spanNodes[0].nodeValue = part.text;
-        for (let index = 1; index < spanNodes.length; index += 1) {
-          spanNodes[index].nodeValue = "";
-        }
-        newChildren.push(part.element);
-      } else if (part.text) {
-        const node = document.createTextNode(part.text);
+        const node = document.createTextNode(text);
+        entry.span.appendChild(node);
         originalTextByNode.set(node, "");
-        newChildren.push(node);
+        continue;
+      }
+      spanNodes[0].nodeValue = text;
+      for (let index = 1; index < spanNodes.length; index += 1) {
+        spanNodes[index].nodeValue = "";
       }
     }
-    element.replaceChildren(...newChildren);
     return true;
   }
 

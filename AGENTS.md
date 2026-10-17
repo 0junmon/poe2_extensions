@@ -160,12 +160,6 @@ npm run verify:data        # JSON/템플릿/우선순위/dist 동기화 검사 (
 - poe.ninja UI는 shadow DOM을 쓰지 않는다. `#poe-ninja-korean-ui` div 하나와
   `<head>`의 `#poe-ninja-korean-ui-style` 하나를 넣고, 모든 선택자를
   `#poe-ninja-korean-ui` 아래로 스코프한다.
-- 줄을 먼저 통째로 번역한 뒤 `distributeTranslatedLine()`이 번역문을 원래 span에
-  되돌린다. 키워드뿐 아니라 `#`/`{}`의 **숫자 값도 매핑**하고, 번역문 순서에 맞게
-  span을 재배치한다. `data-tooltip-trigger` span은 유지된다.
-- 단, `translateStatLine()`은 직접 자식이 **텍스트 span이거나 단일 span 래퍼**인
-  줄만 재구성한다. 더 깊게 중첩된 줄(예: property 안의 tooltip/style 래퍼)은
-  구조가 깨지므로 `translateTextNode()`가 각 span을 개별 번역하도록 남긴다.
 - `dist/`는 생성물이다. 직접 고치지 말고 `npm run build:extension`으로 다시 만든다.
 - `tools/data-search-data.js`(약 6.5MB)는 `npm run build:data-search` 생성물이다.
   `tools/data-search.html`을 `file://`로 열 때 fetch 대신 쓰는 번들이다.
