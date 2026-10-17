@@ -21,6 +21,7 @@
     "build:all": "node scripts/build_all.mjs",
     "build:unique-items": "node scripts/build_unique_items.mjs",
     "build:data-search": "node scripts/build_data_search_bundle.mjs",
+    "verify:data": "node scripts/verify_translation_rules.mjs",
     "analyze:duplicates": "node scripts/analyze_duplicates.mjs",
     "clean:translations": "node scripts/clean_translations.mjs",
     "inspect:csd": "node scripts/inspect_csd.mjs",

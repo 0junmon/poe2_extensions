@@ -67,6 +67,7 @@ ZIP 파일명도 버전을 따라간다(`poe-ninja-korean-v0.6.24.zip`).
 ## 7. 배포 체크리스트
 
 - [ ] `manifest.json` version 증가
+- [ ] `npm run verify:data -- --strict-dist` 통과 (`pipeline/`에서)
 - [ ] `.\package-extension.ps1` 실행 성공
 - [ ] ZIP 루트에 `manifest.json` 존재
 - [ ] ZIP 엔트리 구분자가 `/`인지 확인

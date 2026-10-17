@@ -26,7 +26,10 @@ extension after changing the userscript or translation JSON files.
 | `items/` | `base_items.json`, `base_item_variants.json`, `unique_items.json`, `item_classes.json`, `item_class_singulars.json` | item names and their classes (the variants are the base names that only appear in a unique line, such as `Shrine Sceptre (Legacy)` or the generic `Ring`) |
 | `general/` | `poe_ninja.json`, `keyword.json`, `custom.json` | the poe.ninja interface labels, the curated keywords/terms and the manual overrides |
 
-Load order of the userscript (and of `search-payload.js`): the interface labels, then
+`npm run verify:data` checks JSON shapes, placeholders, load-order conflicts,
+exact-vs-template shadowing and (with `--strict-dist`) the dist copy, without a browser.
+
+Load order of the content script (and of `search-payload.js`): the interface labels, then
 `CORE_DATA_FILES`, then the line data, then **`keyword.json`** (wins over the harvested game
 data) and finally **`custom.json`** (wins over every other file). Both are `{id, ko}` rows and
 they are the files to edit by hand.

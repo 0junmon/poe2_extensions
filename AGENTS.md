@@ -62,6 +62,7 @@ cd C:\Users\Administrator\Documents\poe2_extensions\pipeline
 npm run build:all          # 전체 파이프라인 (또는 ..\build-all.cmd 더블클릭)
 npm run build:extension    # -> ..\dist\poe-ninja-korean (확장 unpacked 폴더)
 npm run build:data-search  # -> ..\tools\data-search-data.js (file:// 용 내장 번들)
+npm run verify:data        # JSON/템플릿/우선순위/dist 동기화 검사 (의존성 없음)
 ```
 
 - `package.json`은 **`pipeline/` 안에만** 있다. `poe2_extensions` 루트에는 없다.
@@ -179,6 +180,10 @@ npm run build:data-search  # -> ..\tools\data-search-data.js (file:// 용 내장
 ```powershell
 # JSON 유효성 (데이터 repo 루트에서)
 node -e "for (const f of ['translations/general/custom.json','translations/general/keyword.json','translations/general/poe_ninja.json']) { const j=JSON.parse(require('fs').readFileSync(f,'utf8')); console.log(f, Array.isArray(j)?j.length:Object.keys(j).length, 'OK'); }"
+
+# 데이터/템플릿/우선순위 + dist 동기화 (의존성 없음)
+cd C:\Users\Administrator\Documents\poe2_extensions\pipeline
+npm run verify:data -- --strict-dist
 
 # 빌드 + ZIP (코드 repo)
 cd C:\Users\Administrator\Documents\poe2_extensions\sites\ninja

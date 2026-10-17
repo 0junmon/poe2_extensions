@@ -39,6 +39,7 @@ cd C:\Users\Administrator\Documents\poe2_extensions\pipeline
 npm run build:extension    # -> ..\dist\poe-ninja-korean
 npm run build:data-search  # -> ..\tools\data-search-data.js
 npm run build:all          # 전체 파이프라인 (build-all.cmd는 루트를 자동 설정)
+npm run verify:data        # JSON/템플릿/우선순위/dist 동기화 검사
 ```
 
 - 외부 의존성이 없어 `npm install`이 필요 없습니다. Playwright 기반 자동 검증은
