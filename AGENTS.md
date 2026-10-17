@@ -145,7 +145,7 @@ npm run verify:data        # JSON/템플릿/우선순위/dist 동기화 검사 (
 - **행을 값마다 추가하지 말고 템플릿 한 행으로 처리한다.** `Hour 3/6/12/18`,
   `Week 1..5`, `Act 2..4`, `Day 1..6`, `Unique Weapons/Armours/...` 같은
   반복 문자열은 `Hour {0}`, `Week {0}`, `Unique {0}` 형태가 정답이다.
-- 리스트 구분자는 `", "`, `" · "`, `" / "` (`LIST_SEPARATORS`). 목록은 부분별로
+- 리스트 구분자는 `", "`, `" · "` (`LIST_SEPARATORS`). 목록은 부분별로
   번역하고, 데이터가 없는 부분은 영어로 남긴다.
 - 값 패턴은 `TEMPLATE_VALUE_PATTERN`(숫자, 범위, 괄호, 부호)으로 인식한다.
 - `id`/`ko`에 `[UNUSED]`, `[DNT-UNUSED]`가 있으면 생성 단계에서 버린다.

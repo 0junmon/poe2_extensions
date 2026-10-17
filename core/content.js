@@ -74,8 +74,8 @@
   // without data stays in English instead of turning the whole row into a half translation.
   const LIST_PART_MAX_LENGTH = 40;
   const LIST_PART_MAX_WORDS = 5;
-  // A list separates its parts with a comma, a middle dot, or a slash ("Fire / Cold").
-  const LIST_SEPARATORS = [", ", " · ", " / "];
+  // A list separates its parts with a comma or a middle dot.
+  const LIST_SEPARATORS = [", ", " · "];
   // Templates that start with a value are grouped under this key instead of a word.
   const VALUE_FIRST_PREFIX = "\u0000";
   // poe.ninja prints the current place as "<area> - <quest>" ("Halls of the Dead - Ngamahu's Test").
