@@ -958,6 +958,27 @@
     return nodes;
   }
 
+  // poe.ninja marks keywords with `data-tooltip-trigger`. Translate those spans
+  // before the line-level join, so a line like <span>40 </span><span>Spirit</span>
+  // keeps its tooltip span instead of being rebuilt from the whole line.
+  function translateTooltipKeywords(element) {
+    const triggers = element.querySelectorAll("[data-tooltip-trigger]");
+    if (triggers.length === 0) {
+      return false;
+    }
+    let changed = false;
+    for (const trigger of triggers) {
+      for (const node of textNodesOf(trigger)) {
+        const before = node.nodeValue;
+        translateTextNode(node);
+        if (node.nodeValue !== before || KOREAN_REGEX.test(node.nodeValue)) {
+          changed = true;
+        }
+      }
+    }
+    return changed;
+  }
+
   // poe.ninja renders one attribute line as several <span>s: the value stays in
   // a plain <span> while the keywords inside the line are tooltip triggers, e.g.
   //   <div><span>30% increased </span><span>Charm</span><span> Charges gained</span></div>
@@ -966,10 +987,15 @@
     if (
       !translationEnabled ||
       !translationsReady ||
-      statTemplates.length === 0 ||
       !(element instanceof Element) ||
       isProtectedTableContent(element)
     ) {
+      return;
+    }
+    if (translateTooltipKeywords(element)) {
+      return;
+    }
+    if (statTemplates.length === 0) {
       return;
     }
     const children = [...element.children];
@@ -1018,6 +1044,11 @@
     // poe.ninja marks the keywords of a line with `data-tooltip-trigger`; putting the Korean
     // line back into the same spans keeps those hover tooltips working.
     if (distributeTranslatedLine(element, translated)) {
+      return;
+    }
+    // Never remove tooltip spans when the line cannot be distributed safely.
+    // The per-node pass below can still translate the keyword inside the span.
+    if (element.querySelector("[data-tooltip-trigger]")) {
       return;
     }
     // The whole line goes into the first text node and the other nodes are
@@ -1176,10 +1207,15 @@
     if (
       !translationEnabled ||
       !translationsReady ||
-      statTemplates.length === 0 ||
       !(element instanceof Element) ||
       isProtectedTableContent(element)
     ) {
+      return;
+    }
+    if (translateTooltipKeywords(element)) {
+      return;
+    }
+    if (statTemplates.length === 0) {
       return;
     }
     const children = element.children;
@@ -1233,6 +1269,9 @@
     }
     // `#` 값이 원래 인라인 요소(예: <b>) 안에 있었으면 그 요소에 값을 되돌려 굵기를 살린다.
     if (applyInlineLineWithValues(element, english, translated)) {
+      return;
+    }
+    if (element.querySelector("[data-tooltip-trigger]")) {
       return;
     }
     nodes[0].nodeValue = translated;
