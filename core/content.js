@@ -831,28 +831,6 @@
       return nameListTranslation;
     }
 
-    const levelMatch = normalized.match(/^level (\d+) (.+)$/);
-    if (levelMatch) {
-      const classTranslation = translations.get(
-        normalizeEnglish(levelMatch[2]),
-      );
-      if (classTranslation) {
-        return `레벨 ${levelMatch[1]} ${classTranslation}`;
-      }
-    }
-
-    const relativeTimeMatch = normalized.match(
-      /^(\d+) (minute|hour|day)s? ago$/,
-    );
-    if (relativeTimeMatch) {
-      const unit = {
-        minute: "분",
-        hour: "시간",
-        day: "일",
-      }[relativeTimeMatch[2]];
-      return `${relativeTimeMatch[1]}${unit} 전`;
-    }
-
     return undefined;
   }
 
