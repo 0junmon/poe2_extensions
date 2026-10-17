@@ -15,7 +15,7 @@
 
   const PREFIX = "[poe 닌자 한글 검색]";
   const DATA_BASE_URL =
-    "https://raw.githubusercontent.com/jun1bh1/poe2_translation_kr/4f5a7423f055cc3be489e994308f4313dfd1e627/translations/";
+    "https://raw.githubusercontent.com/jun1bh1/poe2_translation/cc9d7d2b16669069e41578a549f1ff30865487be/translations/";
   const CORE_DATA_FILES = [
     "names/game_terms.json",
     "names/name_dictionary.json",
@@ -70,7 +70,7 @@
   const composedTranslationCache = new Map();
   // A value is a number, optionally a range and optionally wrapped in brackets
   // ("60", "+35%", "(1—20)").
-  const TEMPLATE_VALUE_PATTERN = "(\\(?[-+]?\\d[\\d.,]*(?:[—~]\\d[\\d.,]*)?\\)?)";
+  const TEMPLATE_VALUE_PATTERN = "((?:[-+]?\\([-+]?|[-+]?)\\d[\\d.,]*(?:[—–~-]\\d[\\d.,]*)?\\)?)?";
   // A bucket key is only used for templates that start with a plain word.
   const PREFIX_WORD_PATTERN = /^[a-z'’]+$/;
   // A value made of numbers and separators only ("(200—724)%") needs no translation.
@@ -84,8 +84,8 @@
   // without data stays in English instead of turning the whole row into a half translation.
   const LIST_PART_MAX_LENGTH = 40;
   const LIST_PART_MAX_WORDS = 5;
-  // A list separates its parts with a comma or a middle dot ("Fire Damage · 38,150").
-  const LIST_SEPARATORS = [", ", " · "];
+  // A list separates its parts with a comma, a middle dot, or a slash ("Fire / Cold").
+  const LIST_SEPARATORS = [", ", " · ", " / "];
   // Templates that start with a value are grouped under this key instead of a word.
   const VALUE_FIRST_PREFIX = "\u0000";
   // poe.ninja prints the current place as "<area> - <quest>" ("Halls of the Dead - Ngamahu's Test").
@@ -101,6 +101,7 @@
   let observer;
   const originalTextByNode = new Map();
   const originalAttributesByElement = new Map();
+  const originalChildOrderByElement = new Map();
 
   function normalizeEnglish(value) {
     return value
@@ -224,30 +225,54 @@
     }
   }
 
+  // `{0}`, `{1}` 같은 자리표시자를 글자/인덱스 조각으로 나눈다.
+  function parsePlaceholderSegments(text) {
+    const segments = [];
+    const pattern = /\{(\d+)\}/g;
+    let lastIndex = 0;
+    let match;
+    while ((match = pattern.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        segments.push({ text: text.slice(lastIndex, match.index) });
+      }
+      segments.push({ index: Number(match[1]) });
+      lastIndex = match.index + match[0].length;
+    }
+    if (lastIndex < text.length) {
+      segments.push({ text: text.slice(lastIndex) });
+    }
+    return segments;
+  }
+
+  function hasPlaceholder(text) {
+    return /\{\d+\}/.test(text);
+  }
+
   function addTranslationTemplate(englishName, koreanName, override = false) {
-    const marker = "{0}";
     const normalizedEnglish = normalizeEnglish(englishName);
     const normalizedKorean = koreanName.trim();
-    const englishMarkerIndex = normalizedEnglish.indexOf(marker);
-    const koreanMarkerIndex = normalizedKorean.indexOf(marker);
-    if (
-      englishMarkerIndex < 0 ||
-      normalizedEnglish.indexOf(marker, englishMarkerIndex + marker.length) >= 0 ||
-      koreanMarkerIndex < 0 ||
-      normalizedKorean.indexOf(marker, koreanMarkerIndex + marker.length) >= 0
-    ) {
+    const englishSegments = parsePlaceholderSegments(normalizedEnglish);
+    if (!englishSegments.some((segment) => segment.index !== undefined)) {
       return;
     }
-
-    const prefix = normalizedEnglish.slice(0, englishMarkerIndex);
-    const suffix = normalizedEnglish.slice(englishMarkerIndex + marker.length);
+    // 자리표시자가 나타나는 순서대로 캡처 그룹을 만든다.
+    // 같은 번호(`{0}` 두 번)는 첫 번째 값만 쓰고, `{0}`/`{1}`은 각각 따로 쓴다.
+    let patternSource = "^";
+    const indices = [];
+    for (const segment of englishSegments) {
+      if (segment.index === undefined) {
+        patternSource += escapeRegExp(segment.text);
+      } else {
+        patternSource += "(.+?)";
+        indices.push(segment.index);
+      }
+    }
+    patternSource += "$";
     const template = {
       key: normalizedEnglish,
-      pattern: new RegExp(
-        `^${escapeRegExp(prefix)}(.+?)${escapeRegExp(suffix)}$`,
-      ),
-      koreanPrefix: normalizedKorean.slice(0, koreanMarkerIndex),
-      koreanSuffix: normalizedKorean.slice(koreanMarkerIndex + marker.length),
+      pattern: new RegExp(patternSource),
+      indices,
+      korean: parsePlaceholderSegments(normalizedKorean),
     };
     const existingIndex = translationTemplates.findIndex(
       (entry) => entry.key === normalizedEnglish,
@@ -269,7 +294,7 @@
     }
     for (const row of rows) {
       if (row && typeof row.id === "string" && typeof row.ko === "string") {
-        if (row.id.includes("{0}") && row.ko.includes("{0}")) {
+        if (hasPlaceholder(row.id) && hasPlaceholder(row.ko)) {
           addTranslationTemplate(row.id, row.ko, override);
         }
         addTranslation(row.id, row.ko, override, addSearchAliases);
@@ -357,6 +382,15 @@
       return;
     }
     for (const [englishName, koreanName] of Object.entries(object)) {
+      // object 형식 파일(예: poe_ninja.json)에서도 `{0}`/`{1}` 템플릿을 쓸 수 있게 한다.
+      if (
+        typeof englishName === "string" &&
+        typeof koreanName === "string" &&
+        hasPlaceholder(englishName) &&
+        hasPlaceholder(koreanName)
+      ) {
+        addTranslationTemplate(englishName, koreanName, override);
+      }
       addTranslation(englishName, koreanName, override);
     }
   }
@@ -781,21 +815,50 @@
       if (!match) {
         continue;
       }
-      // The captured value is a name that has its own translation ("Spectre: {0}") most of
-      // the time, but a template may also capture a plain number ("Converted from Physical
-      // ({0}%)"), which no dictionary holds — such a value is used as it is.
-      const captured = normalizeEnglish(match[1]);
-      const variableTranslation =
-        translations.get(captured) ??
-        (NUMERIC_VALUE_PATTERN.test(captured)
-          ? formatStatValue(match[1])
-          : undefined);
-      if (variableTranslation) {
-        return (
-          template.koreanPrefix +
-          variableTranslation +
-          template.koreanSuffix
-        );
+      // 캡처 값은 이름이면 사전에서 찾고, 숫자면 그대로 쓴다.
+      // 같은 번호(`{0}` 두 번)는 첫 캡처 값을, `{0}`/`{1}`은 각각의 값을 쓴다.
+      const values = new Map();
+      let unresolved = false;
+      for (
+        let occurrence = 0;
+        occurrence < template.indices.length;
+        occurrence += 1
+      ) {
+        const index = template.indices[occurrence];
+        if (values.has(index)) {
+          continue;
+        }
+        const raw = match[occurrence + 1];
+        const captured = typeof raw === "string" ? normalizeEnglish(raw) : "";
+        const fromDictionary = captured ? translations.get(captured) : undefined;
+        const variableTranslation =
+          fromDictionary ??
+          (captured && NUMERIC_VALUE_PATTERN.test(captured)
+            ? formatStatValue(raw)
+            : undefined);
+        if (!variableTranslation) {
+          unresolved = true;
+          break;
+        }
+        values.set(index, variableTranslation);
+      }
+      if (unresolved) {
+        continue;
+      }
+      let result = "";
+      let complete = true;
+      for (const segment of template.korean) {
+        if (segment.index === undefined) {
+          result += segment.text;
+        } else if (values.has(segment.index)) {
+          result += values.get(segment.index);
+        } else {
+          complete = false;
+          break;
+        }
+      }
+      if (complete) {
+        return result;
       }
     }
 
@@ -1001,6 +1064,214 @@
     }
   }
 
+  // Inline formatting tags that may split one line into text nodes + elements, e.g.
+  //   <div>Found <b>124,103</b> characters.</div>
+  // Anchor tags are left out so that links are never emptied. Pure <span> lines are handled
+  // by translateStatLine, so this only looks at lines that also have a plain text node.
+  const INLINE_LINE_TAGS = new Set([
+    "B",
+    "STRONG",
+    "EM",
+    "I",
+    "U",
+    "S",
+    "DEL",
+    "INS",
+    "SMALL",
+    "MARK",
+    "CODE",
+    "SPAN",
+    "SUB",
+    "SUP",
+    "ABBR",
+  ]);
+  const MAX_INLINE_LINE_CHILDREN = 8;
+
+  // translateStatText 와 같은 방식으로, 매칭되는 `#` 템플릿과 캡처 값을 돌려준다.
+  function matchStatTemplate(normalizedEnglish) {
+    if (statTemplates.length === 0 || !/\d/.test(normalizedEnglish)) {
+      return null;
+    }
+    const firstWord = normalizedEnglish.split(" ")[0] ?? "";
+    const candidates =
+      statTemplatesByPrefix.get(
+        PREFIX_WORD_PATTERN.test(firstWord) ? firstWord : VALUE_FIRST_PREFIX,
+      ) ?? [];
+    for (const template of candidates) {
+      const match = normalizedEnglish.match(template.pattern);
+      if (match) {
+        return { template, match };
+      }
+    }
+    return null;
+  }
+
+  // `#` 값이 원래 어느 인라인 요소(예: 숫자를 감싼 <b>)에 있었는지 찾아, 한국어 어순으로 다시
+  // 배치하면서 그 값만 원래 요소에 되돌려 넣는다(굵기 유지).
+  // 재구성한 문자열이 실제 번역 결과와 같을 때만 적용하고, 아니면 false 를 돌려 기존 처리로 넘긴다.
+  function applyInlineLineWithValues(element, english, translated) {
+    const matched = matchStatTemplate(normalizeEnglish(english));
+    if (!matched) {
+      return false;
+    }
+    const { template, match } = matched;
+    const numValues = match.length - 1;
+    if (numValues === 0 || template.koreanParts.length !== numValues + 1) {
+      return false;
+    }
+
+    const childElements = [...element.children];
+    const childTexts = childElements.map((child) =>
+      textNodesOf(child)
+        .map((node) => originalTextByNode.get(node) ?? node.nodeValue ?? "")
+        .join("")
+        .trim(),
+    );
+    const usedChildren = new Set();
+    const valueSources = new Array(numValues).fill(null);
+    for (let group = 0; group < numValues; group += 1) {
+      const raw = match[group + 1];
+      if (typeof raw !== "string") {
+        continue;
+      }
+      const formatted = formatStatValue(raw);
+      const index = childElements.findIndex(
+        (child, childIndex) =>
+          !usedChildren.has(childIndex) &&
+          (childTexts[childIndex] === raw || childTexts[childIndex] === formatted),
+      );
+      if (index >= 0) {
+        usedChildren.add(index);
+        valueSources[group] = childElements[index];
+      }
+    }
+    if (!valueSources.some(Boolean)) {
+      return false;
+    }
+
+    // 한국어 어순으로 (텍스트, 값) 순서를 만든다. 같은 값 요소를 두 번 쓸 수는 없다.
+    const koreanValueOrder = template.koreanValueOrder;
+    const sequence = [{ text: template.koreanParts[0] }];
+    const usedElements = new Set();
+    let rebuilt = template.koreanParts[0];
+    for (let slot = 0; slot < numValues; slot += 1) {
+      const group = koreanValueOrder ? koreanValueOrder[slot] : slot;
+      const valueText = formatStatValue(match[group + 1]);
+      const source = valueSources[group];
+      const elementSource = source && !usedElements.has(source) ? source : null;
+      if (elementSource) {
+        usedElements.add(elementSource);
+      }
+      sequence.push({ text: valueText, element: elementSource });
+      rebuilt += valueText;
+      rebuilt += template.koreanParts[slot + 1];
+      sequence.push({ text: template.koreanParts[slot + 1] });
+    }
+    // translateEnglishText 가 다른 경로로 번역했으면 구조를 건드리지 않는다.
+    if (rebuilt !== translated) {
+      return false;
+    }
+
+    if (!originalChildOrderByElement.has(element)) {
+      originalChildOrderByElement.set(element, [...element.childNodes]);
+    }
+    const newChildren = [];
+    for (const part of sequence) {
+      if (part.element) {
+        const sourceNodes = textNodesOf(part.element);
+        if (sourceNodes.length === 0) {
+          part.element.appendChild(document.createTextNode(part.text));
+        } else {
+          sourceNodes[0].nodeValue = part.text;
+          for (let index = 1; index < sourceNodes.length; index += 1) {
+            sourceNodes[index].nodeValue = "";
+          }
+        }
+        newChildren.push(part.element);
+      } else if (part.text) {
+        const node = document.createTextNode(part.text);
+        originalTextByNode.set(node, "");
+        newChildren.push(node);
+      }
+    }
+    element.replaceChildren(...newChildren);
+    return true;
+  }
+
+  // Some counters/labels split one sentence with an inline tag (`<b>` around the number), so the
+  // per-text-node translation cannot match the `#` template. Join the original text of the whole
+  // line, translate it, and write the Korean back into the first text node (the other text nodes
+  // are emptied but the elements stay). Costs are kept low: it bails out on child count and on
+  // the "has a direct text node" check before any template lookup runs.
+  function translateInlineLine(element) {
+    if (
+      !translationEnabled ||
+      !translationsReady ||
+      statTemplates.length === 0 ||
+      !(element instanceof Element) ||
+      isProtectedTableContent(element)
+    ) {
+      return;
+    }
+    const children = element.children;
+    if (children.length === 0 || children.length > MAX_INLINE_LINE_CHILDREN) {
+      return;
+    }
+    let hasDirectText = false;
+    for (const node of element.childNodes) {
+      if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim()) {
+        hasDirectText = true;
+        break;
+      }
+    }
+    if (!hasDirectText) {
+      return;
+    }
+    for (const child of children) {
+      if (!INLINE_LINE_TAGS.has(child.tagName)) {
+        return;
+      }
+    }
+    for (const node of element.querySelectorAll("*")) {
+      if (!INLINE_LINE_TAGS.has(node.tagName)) {
+        return;
+      }
+    }
+    const nodes = textNodesOf(element);
+    if (nodes.length === 0) {
+      return;
+    }
+    const english = nodes
+      .map((node) => originalTextByNode.get(node) ?? node.nodeValue ?? "")
+      .join("")
+      .trim();
+    if (
+      !english ||
+      english.length > MAX_STAT_LINE_LENGTH ||
+      !/\d/.test(english) ||
+      KOREAN_REGEX.test(english)
+    ) {
+      return;
+    }
+    const translated = translateEnglishText(english);
+    if (!translated || translated === english) {
+      return;
+    }
+    for (const node of nodes) {
+      if (!originalTextByNode.has(node)) {
+        originalTextByNode.set(node, node.nodeValue);
+      }
+    }
+    // `#` 값이 원래 인라인 요소(예: <b>) 안에 있었으면 그 요소에 값을 되돌려 굵기를 살린다.
+    if (applyInlineLineWithValues(element, english, translated)) {
+      return;
+    }
+    nodes[0].nodeValue = translated;
+    for (let index = 1; index < nodes.length; index += 1) {
+      nodes[index].nodeValue = "";
+    }
+  }
+
   // The line uses another grammatical form and spelling than the term table ("Slowing" in the
   // line against "Slow" -> 감속 in the buff data, "Channel" against "Channelling" -> 집중 유지
   // in the keyword data), so every known form contributes a candidate Korean word and the one
@@ -1160,6 +1431,7 @@
     }
     translateElement(root);
     translateStatLine(root);
+    translateInlineLine(root);
     const walker = document.createTreeWalker(
       root,
       NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,
@@ -1182,6 +1454,7 @@
       } else {
         translateElement(node);
         translateStatLine(node);
+        translateInlineLine(node);
       }
     }
   }
@@ -1239,6 +1512,7 @@
           translateElement(mutation.target);
         }
       }
+      placeUiHost();
     });
     observer.observe(root, {
       childList: true,
@@ -1250,6 +1524,13 @@
   }
 
   function restoreOriginalText() {
+    // 값을 원래 인라인 요소로 되돌리며 자식 순서를 바꿨을 수 있으니, 먼저 원래 순서로 복구한다.
+    for (const [element, children] of originalChildOrderByElement) {
+      if (element.isConnected) {
+        element.replaceChildren(...children);
+      }
+    }
+    originalChildOrderByElement.clear();
     for (const [node, text] of originalTextByNode) {
       if (node.isConnected) {
         node.nodeValue = text;
@@ -1286,30 +1567,119 @@
 
   const UI_HOST_ID = "poe-ninja-korean-ui";
   let uiParts = null;
+  let uiHost = null;
+
+  // </body> 바로 위(body 의 마지막 자식)에 둔다. 다른 고정 요소가 같은 z-index 라도
+  // DOM 순서상 나중이라 위에 그려진다.
+  function placeUiHost() {
+    const body = document.body;
+    if (!uiHost || !body) {
+      return;
+    }
+    if (body.lastElementChild !== uiHost) {
+      body.append(uiHost);
+    }
+  }
+
+  const UI_STYLE_ID = "poe-ninja-korean-ui-style";
 
   function buildUi() {
     if (uiParts || !document.body || document.getElementById(UI_HOST_ID)) {
       return;
     }
+
+    // shadow DOM 대신 페이지에 <style> 하나와 div 하나를 넣는다.
+    // 클래스가 페이지 요소와 겹치지 않도록 모든 선택자를 #poe-ninja-korean-ui 아래로 스코프한다.
+    if (!document.getElementById(UI_STYLE_ID)) {
+      const style = document.createElement("style");
+      style.id = UI_STYLE_ID;
+      style.textContent = `
+        #poe-ninja-korean-ui {
+          display: flex;
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: var(--s2);
+          font-weight: var(--font-weight-medium);
+          line-height: 1;
+          transition: all 50ms;
+          text-decoration: none;
+          z-index: 2147483647;
+        }
+        #poe-ninja-korean-ui button.toggle-button {
+          height: 2.2rem;
+          width: 2.4rem;
+          box-sizing: border-box;
+          color: hsla(var(--emerald-950));
+          background-color: hsla(var(--emerald-500));
+          border: 1px solid hsla(var(--emerald-500));
+          border-radius: var(--rounded-sm);
+          font-size: 15px;
+        }
+        #poe-ninja-korean-ui a.donation-link {
+          display: inline-flex;
+          height: 2.2rem;
+          padding: 0 1em;
+          box-sizing: border-box;
+          color: hsla(var(--emerald-500));
+          background-color: color-mix(in oklab, var(--color-coolgrey-850) 95%, transparent);
+          border: 1px solid hsla(var(--emerald-500));
+          border-radius: var(--rounded-sm);
+          font-size: 14px;
+          align-items: center;
+          justify-content: center;
+        }
+        #poe-ninja-korean-ui a.donation-link:hover {
+          color: hsla(var(--emerald-950));
+          background-color: hsla(var(--emerald-500));
+          text-decoration: none;
+        }
+        #poe-ninja-korean-ui .toggle-button[data-active="false"],
+        #poe-ninja-korean-ui .donation-link {
+          color: hsla(var(--emerald-500));
+          background-color: color-mix(in oklab, var(--color-coolgrey-850) 95%, transparent);
+        }
+        #poe-ninja-korean-ui .toggle-button:focus-visible,
+        #poe-ninja-korean-ui .donation-link:focus-visible {
+          outline: 2px solid hsla(var(--emerald-500));
+          outline-offset: 2px;
+        }
+        #poe-ninja-korean-ui .donation-link__icon { 
+          flex-shrink: 0; 
+        }
+      `;
+      (document.head || document.documentElement).append(style);
+    }
+
     const host = document.createElement("div");
     host.id = UI_HOST_ID;
-    const shadow = host.attachShadow({ mode: "open" });
-    const style = document.createElement("style");
-    style.textContent = `
-      :host { all: initial; }
-      .wrap { position: fixed; right: 16px; bottom: 16px; z-index: 2147483000; font: 12px/1.45 Arial, "Malgun Gothic", sans-serif; color: #e8e4dc; }
-      button { border: 1px solid #716548; border-radius: 6px; background: #1a1c22; color: inherit; font: inherit; padding: 6px 10px; cursor: pointer; }
-      button[data-active="true"] { background: #dfbd68; border-color: #dfbd68; color: #1a1c22; }
-    `;
 
     const toggleButton = document.createElement("button");
     toggleButton.type = "button";
+    toggleButton.className = "toggle-button";
 
-    const wrap = document.createElement("div");
-    wrap.className = "wrap";
-    wrap.append(toggleButton);
-    shadow.append(style, wrap);
-    document.body.append(host);
+    const donationLink = document.createElement("a");
+    donationLink.className = "donation-link";
+    donationLink.href = "https://toon.at/donate/0junmon";
+    donationLink.target = "_blank";
+    donationLink.rel = "noopener noreferrer";
+    donationLink.title = "개발자 응원하기";
+
+    const donationIcon = document.createElement("span");
+    donationIcon.className = "donation-link__icon";
+    donationIcon.setAttribute("aria-hidden", "true");
+    donationIcon.textContent = "☕";
+
+    const donationLabel = document.createElement("span");
+    donationLabel.textContent = "개발자 응원하기";
+
+    donationLink.append(donationIcon, donationLabel);
+    host.append(toggleButton, donationLink);
+
+    uiHost = host;
+    placeUiHost();
 
     uiParts = { toggleButton };
 

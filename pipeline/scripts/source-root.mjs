@@ -2,7 +2,7 @@
 //
 // 같은 스크립트가 두 가지 배치에서 모두 동작해야 한다.
 //
-//   데이터 폴더(poe2_translation_kr) : <root>/scripts/…        + ../chrome-extension, ../userscripts
+//   데이터 폴더(poe2_translation) : <root>/scripts/…        + ../chrome-extension, ../userscripts
 //   코드 저장소(poe2_extensions)     : <ext>/pipeline/scripts/… + ../../sites/ninja, ../../core, ../../tools
 //
 // 기준 폴더(데이터)는 project-root.mjs 가 POBKR_ROOT 로 찾고, 코드 파일은 이 파일이 스크립트
