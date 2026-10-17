@@ -5,6 +5,8 @@ poe.ninja 확장 코드의 **원본**입니다. 빌드하면 `dist/poe-ninja-kor
 - `manifest.json` — 확장 선언 (`matches: https://poe.ninja/poe2/*`, content_scripts, translations 노출)
 - `page_search.js` — poe.ninja 페이지에 주입되는 사이트별 로직 (검색/필터)
 - `INSTALL.md` — 설치 안내
+- `PUBLISHING.md` — Chrome Web Store 배포 절차
+- `package-extension.ps1` — 빌드 + 업로드용 ZIP 생성
 
 `manifest.json`과 `page_search.js`는 스크립트로 만들 수 없는 **원본 코드**이므로
 **이 폴더에서 직접 수정**합니다. 수정 후 `pipeline/`에서

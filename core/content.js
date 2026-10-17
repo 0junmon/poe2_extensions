@@ -1,21 +1,11 @@
-// ==UserScript==
-// @name         poe 닌자 한글 검색
-// @namespace    poe2-ninja-korean-search
-// @version      0.6.18
-// @description  Korean translation and search for poe.ninja PoE 2
-// @match        https://poe.ninja/poe2/*
-// @match        https://www.poe.ninja/poe2/*
-// @grant        GM_xmlhttpRequest
-// @connect      raw.githubusercontent.com
-// @run-at       document-start
-// ==/UserScript==
+// poe.ninja Korean translation engine.
+// Loaded as a Chrome extension content script; the translation data is bundled in
+// dist/poe-ninja-korean/translations/ (no network requests).
 
 (function () {
   "use strict";
 
   const PREFIX = "[poe 닌자 한글 검색]";
-  const DATA_BASE_URL =
-    "https://raw.githubusercontent.com/jun1bh1/poe2_translation/cc9d7d2b16669069e41578a549f1ff30865487be/translations/";
   const CORE_DATA_FILES = [
     "names/game_terms.json",
     "names/name_dictionary.json",
@@ -130,49 +120,18 @@
 
   function requestJson(fileName) {
     const getExtensionUrl = globalThis.chrome?.runtime?.getURL;
-    if (typeof getExtensionUrl === "function") {
-      const url = getExtensionUrl(`translations/${fileName}`);
-      return fetch(url).then((response) => {
-        if (!response.ok) {
-          throw new Error(
-            `Failed to load ${fileName}: HTTP ${response.status}`,
-          );
-        }
-        return response.json().catch((error) => {
-          throw new Error(`Invalid JSON in ${fileName}: ${error.message}`);
-        });
-      });
-    }
-
-    if (typeof GM_xmlhttpRequest !== "function") {
+    if (typeof getExtensionUrl !== "function") {
       return Promise.reject(
-        new Error("No extension resource or userscript request API is available"),
+        new Error("Translation data is only available in the Chrome extension"),
       );
     }
-
-    return new Promise((resolve, reject) => {
-      GM_xmlhttpRequest({
-        method: "GET",
-        url: new URL(fileName, DATA_BASE_URL).href,
-        onload(response) {
-          if (response.status < 200 || response.status >= 300) {
-            reject(
-              new Error(`Failed to load ${fileName}: HTTP ${response.status}`),
-            );
-            return;
-          }
-          try {
-            resolve(JSON.parse(response.responseText));
-          } catch (error) {
-            reject(new Error(`Invalid JSON in ${fileName}: ${error.message}`));
-          }
-        },
-        onerror() {
-          reject(new Error(`Network error while loading ${fileName}`));
-        },
-        ontimeout() {
-          reject(new Error(`Timed out while loading ${fileName}`));
-        },
+    const url = getExtensionUrl(`translations/${fileName}`);
+    return fetch(url).then((response) => {
+      if (!response.ok) {
+        throw new Error(`Failed to load ${fileName}: HTTP ${response.status}`);
+      }
+      return response.json().catch((error) => {
+        throw new Error(`Invalid JSON in ${fileName}: ${error.message}`);
       });
     });
   }

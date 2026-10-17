@@ -15,6 +15,7 @@ core/                  공통 코드 (모든 사이트가 공유)
   search-payload.js    검색 payload
 sites/                 사이트별 확장 코드
   ninja/               poe.ninja 확장 (manifest.json, page_search.js)
+                       PUBLISHING.md, package-extension.ps1 (배포)
   filter/              poe2 filter 사이트 확장 (같은 구성으로 추가)
 pipeline/              번역 데이터 생성 도구 + package.json (npm 명령은 여기서 실행)
   scripts/             build_*.mjs, verify_*.mjs
@@ -57,11 +58,11 @@ npm run build:all          # 전체 파이프라인 (build-all.cmd는 루트를 
 
 - `core/content.js`는 **엔진 단일 원본**입니다. 사이트별로 복사본을 만들지 말고 항상
   이 파일을 공유하세요(엔진을 고치면 모든 사이트 확장이 같은 내용을 쓰게 됩니다).
-- `DATA_BASE_URL`은 유저스크립트 폴백에서만 쓰는 외부 주소입니다. 현재 값은 데이터
-  커밋 `cc9d7d2…`를 가리키지만, **데이터 저장소가 비공개라 `raw.githubusercontent.com`
-  접근은 404**입니다. 폴백을 쓰려면 저장소를 Public으로 전환하거나 데이터를 공개
-  경로에 배포해야 합니다. 크롬 확장은 `dist`에 데이터를 포함하므로 영향이 없습니다.
-  번역을 더 커밋하면 그 새 해시로 이 줄을 갱신하고 `npm run build:extension`으로
-  `dist`를 다시 만드세요(`AGENTS.md` 7절).
+- **배포 대상은 크롬 확장 단일**입니다. `dist/poe-ninja-korean`을 zip으로 묶어
+  Chrome Web Store 등에 업로드합니다. 확장은 `translations/**`를 내장하고 네트워크
+  요청을 하지 않으므로 데이터 저장소가 비공개여도 됩니다. 유저스크립트용
+  `DATA_BASE_URL` 폴백은 제거되었습니다.
+- 번역을 갱신하면 `npm run build:extension`으로 `dist`를 다시 만들고, 배포 zip을
+  재생성한 뒤 manifest `version`을 올려 업로드합니다(`AGENTS.md` 7·8절).
 - `sync-from-project.cmd`는 데이터 폴더에 코드 원본(`scripts/`, `userscripts/`)이
   있던 시절의 스크립트입니다. 현재 구조에서는 그대로 실행하면 실패합니다.
