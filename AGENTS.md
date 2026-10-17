@@ -7,6 +7,35 @@
 과거 문서에 남은 `pobkr`, `poe2_translation_kr`, `userscripts/`, `chrome-extension/`
 경로는 **레거시**이며 현재 데이터 폴더에는 존재하지 않는다.
 
+## 0. 새 에이전트 시작 체크리스트
+
+1. 이 파일 → `README.md` → `sites/ninja/PUBLISHING.md` → `sites/ninja/INSTALL.md` 순서로 읽는다.
+2. 두 저장소 경로가 있는지 확인한다. 없으면(둘 다 **비공개**) GitHub 로그인 후 클론한다.
+   ```powershell
+   gh auth login
+   git clone https://github.com/jun1bh1/poe2_translation.git
+   git clone https://github.com/jun1bh1/poe2_extensions.git
+   ```
+3. 두 저장소가 클린인지, HEAD가 맞는지 확인한다.
+   - 데이터: `69c9e53` (`Fix Legacy translation placeholder`)
+   - 코드: `6d33317` (`Add dependency-free translation rule checks`)
+4. **`data/`는 Git에 없다.** 다른 PC라면 원본 PC에서 직접 복사해야 한다.
+   - `poe2_translation/data/balance` (1,024개, 약 315MB)
+   - `poe2_translation/data/statdescriptions` (`.csd` 589개)
+   - `translations/` 편집과 확장 빌드만 할 때는 `data/`가 없어도 된다.
+     `npm run build:all`/`build:translation-map` 같은 전체 파이프라인에만 필요하다.
+5. 환경: Windows + PowerShell, Node 20+ (검증: v24.21.0), Python 3(전체 빌드만), Chrome.
+6. 기준 폴더를 지정하고 검사로 시작 상태를 확인한다.
+   ```powershell
+   $env:POBKR_ROOT = 'C:\Users\Administrator\Documents\poe2_translation'
+   cd C:\Users\Administrator\Documents\poe2_extensions\pipeline
+   npm run verify:data
+   ```
+7. 빌드/배포: `sites/ninja/package-extension.ps1` → `dist/poe-ninja-korean-v<version>.zip`.
+   수동 테스트: `chrome://extensions` → Load unpacked → `dist/poe-ninja-korean`.
+8. `dist/`, `tools/data-search-data.js`, `tools/ninja-test.html`은 생성물/로컬 전용이다.
+   직접 수정하거나 커밋하지 않는다.
+
 ## 1. 저장소 두 개
 
 | 역할 | 로컬 경로 | GitHub | Git 추적 대상 |
@@ -24,8 +53,8 @@
 
 ## 2. 2026-10-17 작업 시작 시점 상태 (기록)
 
-> 이 절은 당시 상태 기록이다. 아래 §8의 커밋/해시 갱신/재빌드를 완료한 뒤
-> 두 저장소는 모두 클린이고, 데이터 HEAD는 `cc9d7d2`다.
+> 이 절은 당시 상태 기록이다. 2026-10-17 최종 상태는 두 저장소 모두 클린이며
+> 데이터 HEAD `69c9e53`, 코드 HEAD `6d33317`이다.
 
 데이터 repo:
 - HEAD `9c3604a` (`Restructure translations into general/items/names/lines`), `master` = `origin/main`
@@ -157,11 +186,12 @@ npm run verify:data        # JSON/템플릿/우선순위/dist 동기화 검사 (
 ## 8. 작업 상태 (2026-10-17 기준)
 
 완료:
-1. 데이터 repo의 `translations/general/*.json` 3건 커밋·푸시 (`cc9d7d2`)
+1. 데이터 repo 번역 커밋·푸시 (`cc9d7d2`), `Legacy` 자리표시자 수정 (`69c9e53`)
 2. 크롬 확장 단일 배포로 전환: 유저스크립트 폴백(`DATA_BASE_URL`) 제거
-3. `npm run build:extension` / `npm run build:data-search` 재생성
-4. 코드 repo 변경(엔진/파이프라인 + 문서) 커밋·푸시
-5. `dist/poe-ninja-korean` 배포용 zip 생성
+3. Playwright 검증 제거, 의존성 없는 `npm run verify:data` 추가
+4. `npm run build:extension` / `npm run build:data-search` 재생성
+5. 코드 repo 변경(엔진/파이프라인 + 문서 + 검사 스크립트) 커밋·푸시 (`6d33317`)
+6. `dist/poe-ninja-korean-v0.6.24.zip` 생성
 
 남은 것(배포):
 1. Chrome Web Store 개발자 등록 후 zip 업로드
