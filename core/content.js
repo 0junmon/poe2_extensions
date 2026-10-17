@@ -953,7 +953,12 @@
     const children = [...element.children];
     if (
       children.length < 2 ||
-      !children.every((child) => child.tagName === "SPAN") ||
+      // Rebuilding a line whose spans contain nested spans (tooltip/style
+      // wrappers) loses the nesting and the surrounding punctuation. Leave
+      // those lines to the per-text-node pass, which preserves the wrappers.
+      !children.every(
+        (child) => child.tagName === "SPAN" && child.children.length === 0,
+      ) ||
       // A line is made of inline spans only; anything else (a card with several
       // lines, links, images) is left to the normal text node translation.
       [...element.querySelectorAll("*")].some((node) => node.tagName !== "SPAN")
