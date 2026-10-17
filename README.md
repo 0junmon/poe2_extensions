@@ -29,11 +29,12 @@ dist/                  빌드 산출물 — 직접 수정하지 않음
 
 ## 빌드
 
-데이터 루트는 `POBKR_ROOT` 환경변수로 넘깁니다(레거시 이름). 개별 `npm run`은
-형제 폴더를 자동 탐색하지 못하므로 직접 지정합니다.
+데이터 루트는 `TRANSLATION_ROOT` 환경변수로 넘깁니다. 이전 이름 `POBKR_ROOT`도
+fallback으로 지원합니다. 개별 `npm run`은 형제 폴더를 자동 탐색하지 못하므로
+직접 지정합니다.
 
 ```powershell
-$env:POBKR_ROOT = 'C:\Users\Administrator\Documents\poe2_translation'
+$env:TRANSLATION_ROOT = 'C:\Users\Administrator\Documents\poe2_translation'
 cd C:\Users\Administrator\Documents\poe2_extensions\pipeline
 
 npm run build:extension    # -> ..\dist\poe-ninja-korean

@@ -4,7 +4,7 @@
 
 새 세션/새 에이전트는 이 파일을 먼저 읽고, 그다음 `README.md`와
 `sites/ninja/INSTALL.md`를 읽는다. 이 문서는 "지금 실제로 어떻게 동작하는지"만 적는다.
-과거 문서에 남은 `pobkr`, `userscripts/`, `chrome-extension/`
+과거 문서에 남은 `userscripts/`, `chrome-extension/`
 경로는 **레거시**이며 현재 데이터 폴더에는 존재하지 않는다.
 
 ## 0. 새 에이전트 시작 체크리스트
@@ -30,7 +30,7 @@
 5. 환경: Windows + PowerShell, Node 20+ (검증: v24.21.0), Python 3(전체 빌드만), Chrome.
 6. 기준 폴더를 지정하고 검사로 시작 상태를 확인한다.
    ```powershell
-   $env:POBKR_ROOT = 'C:\Users\Administrator\Documents\poe2_translation'
+   $env:TRANSLATION_ROOT = 'C:\Users\Administrator\Documents\poe2_translation'
    cd C:\Users\Administrator\Documents\poe2_extensions\pipeline
    npm run verify:data
    ```
@@ -77,18 +77,19 @@
 
 ## 3. 빌드/실행
 
-기준 폴더(데이터 루트)는 `POBKR_ROOT` 환경변수로 넘긴다. 이름은 `pobkr`
-(Path of Building KR) 시절의 레거시지만 아직 코드 전반에서 사용한다.
+기준 폴더(데이터 루트)는 `TRANSLATION_ROOT` 환경변수로 넘긴다. 이전 이름
+`POBKR_ROOT`는 레거시 호환용 fallback으로만 지원한다.
 
 우선순위 (`pipeline/scripts/project-root.mjs`, `build_all.mjs`):
-`--root` 인자 > `POBKR_ROOT` > 스크립트 위치에서 위로 올라가며 `data/balance` 탐색
+`--root` 인자 > `TRANSLATION_ROOT` (없으면 `POBKR_ROOT`) > 스크립트 위치에서
+위로 올라가며 `data/balance` 탐색
 
-`pipeline/build-all.cmd`는 실행 시 `POBKR_ROOT`를 **형제 폴더**
+`pipeline/build-all.cmd`는 실행 시 `TRANSLATION_ROOT`를 **형제 폴더**
 `..\..\poe2_translation`로 자동 설정한다. 개별 `npm run ...`을 직접 실행할 때는
 자동 탐색이 형제 폴더를 찾지 못하므로 환경변수를 직접 지정한다.
 
 ```powershell
-$env:POBKR_ROOT = 'C:\Users\Administrator\Documents\poe2_translation'
+$env:TRANSLATION_ROOT = 'C:\Users\Administrator\Documents\poe2_translation'
 cd C:\Users\Administrator\Documents\poe2_extensions\pipeline
 
 npm run build:all          # 전체 파이프라인 (또는 ..\build-all.cmd 더블클릭)
@@ -172,9 +173,9 @@ npm run verify:data        # JSON/템플릿/우선순위/dist 동기화 검사 (
      (2026-10-17 기준 두 저장소 모두 PRIVATE)
    - 배포물은 `dist/poe-ninja-korean` 폴더를 zip으로 묶어 Chrome Web Store 등에 올린다.
    - 번역을 갱신하면 `npm run build:extension` 후 zip을 다시 만들고 manifest version을 올린다.
-2. **`POBKR_ROOT`는 레거시 이름**이다. `TRANSLATION_ROOT`로 바꾸려면
-   "새 이름 우선 + `POBKR_ROOT` 폴백"으로 마이그레이션한다. 한 번에 바꾸면
-   `build-all.cmd`, `project-root.mjs`, `build_all.mjs`, `source-root.mjs`가 깨진다.
+2. **환경변수 표준 이름은 `TRANSLATION_ROOT`**다. `POBKR_ROOT`는 레거시 셸/작업
+   설정을 위해 fallback으로만 남아 있다. 모든 사용처를 새 이름으로 바꾼 뒤
+   fallback을 제거한다.
 3. **`sync-from-project.cmd`는 현재 그대로는 실패한다.** 소스로
    `%SRC%\scripts\build_all.mjs`, `userscripts\`, `chrome-extension\`을 기대하는데
    데이터 폴더에 해당 폴더가 없다. 코드 원본은 이 저장소(`poe2_extensions`)이며,
@@ -184,7 +185,7 @@ npm run verify:data        # JSON/템플릿/우선순위/dist 동기화 검사 (
    `../userscripts`)는 현재 존재하지 않으므로 모노레포 후보가 선택된다.
 5. `data/balance`는 1,024개 파일 약 315MB, `data/statdescriptions`는 `.csd` 589개다.
    `stat_lines.json`(25,730행)은 이 `.csd`에서 생성됐다.
-6. 문서에 남은 `pobkr` 표기는 레거시이므로 가능한 한 새 이름으로 고친다.
+6. 문서에 남은 옛 프로젝트명 표기는 가능한 한 새 이름으로 고친다.
 
 ## 8. 작업 상태 (2026-10-17 기준)
 
@@ -195,6 +196,7 @@ npm run verify:data        # JSON/템플릿/우선순위/dist 동기화 검사 (
 4. `npm run build:extension` / `npm run build:data-search` 재생성
 5. 코드 repo 변경(엔진/파이프라인 + 문서 + 검사 스크립트) 커밋·푸시
 6. `dist/poe-ninja-korean-v0.6.24.zip` 생성
+7. 환경변수 표준 이름을 `TRANSLATION_ROOT`로 변경 (`POBKR_ROOT` fallback 유지)
 
 남은 것(배포):
 1. Chrome Web Store 개발자 등록 후 zip 업로드
@@ -203,7 +205,7 @@ npm run verify:data        # JSON/템플릿/우선순위/dist 동기화 검사 (
 4. 업로드할 때마다 manifest `version` 증가
 
 남은 것(정리, 선택):
-1. `POBKR_ROOT` → `TRANSLATION_ROOT` 마이그레이션 (새 이름 우선 + 옛 이름 폴백)
+1. 모든 셸/작업 설정을 `TRANSLATION_ROOT`로 바꾼 뒤 `POBKR_ROOT` fallback 제거
 2. `sync-from-project.cmd`를 현재 구조에 맞게 재작성하거나 폐기 표시
 
 ## 9. 검증

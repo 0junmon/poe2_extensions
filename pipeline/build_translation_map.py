@@ -8,10 +8,13 @@ from typing import Any
 
 
 # 기준 폴더(= data/, translations/ 가 있는 폴더).
-# build-all.cmd / build_all.mjs 가 POBKR_ROOT 로 넘겨주고, 없으면 이 파일 옆 폴더를 쓴다.
+# build-all.cmd / build_all.mjs 가 TRANSLATION_ROOT 로 넘겨주고, 없으면 이 파일 옆
+# 폴더를 쓴다. 레거시 POBKR_ROOT도 fallback으로 인정한다.
 # 코드(pipeline/)와 데이터(poe2_translation)를 나눠 두어도 결과는 데이터 폴더에 쓰인다.
 PROJECT_ROOT = Path(
-    os.environ.get("POBKR_ROOT") or Path(__file__).resolve().parent
+    os.environ.get("TRANSLATION_ROOT")
+    or os.environ.get("POBKR_ROOT")
+    or Path(__file__).resolve().parent
 ).resolve()
 
 

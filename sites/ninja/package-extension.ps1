@@ -22,7 +22,7 @@ if (-not (Test-Path (Join-Path $DataRoot "translations"))) {
 }
 $DataRoot = (Resolve-Path $DataRoot).Path
 
-$env:POBKR_ROOT = $DataRoot
+$env:TRANSLATION_ROOT = $DataRoot
 Push-Location (Join-Path $codeRoot "pipeline")
 try {
   npm run build:extension

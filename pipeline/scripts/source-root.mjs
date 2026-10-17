@@ -5,7 +5,7 @@
 //   데이터 폴더(poe2_translation) : <root>/scripts/…        + ../chrome-extension, ../userscripts
 //   코드 저장소(poe2_extensions)     : <ext>/pipeline/scripts/… + ../../sites/ninja, ../../core, ../../tools
 //
-// 기준 폴더(데이터)는 project-root.mjs 가 POBKR_ROOT 로 찾고, 코드 파일은 이 파일이 스크립트
+// 기준 폴더(데이터)는 project-root.mjs 가 TRANSLATION_ROOT 로 찾고, 코드 파일은 이 파일이 스크립트
 // 폴더 기준 후보 경로를 순서대로 확인해 처음 존재하는 것을 쓴다.
 
 import { existsSync } from "node:fs";

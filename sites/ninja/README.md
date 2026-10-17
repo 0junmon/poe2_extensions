@@ -12,4 +12,4 @@ poe.ninja 확장 코드의 **원본**입니다. 빌드하면 `dist/poe-ninja-kor
 **이 폴더에서 직접 수정**합니다. 수정 후 `pipeline/`에서
 `npm run build:extension`을 실행하면 `dist/poe-ninja-korean`에 반영됩니다.
 
-과거 `pobkr\chrome-extension`을 미러링하던 방식(`sync-from-project.cmd`)은 폐기되었습니다.
+과거 `chrome-extension` 폴더를 미러링하던 방식(`sync-from-project.cmd`)은 폐기되었습니다.

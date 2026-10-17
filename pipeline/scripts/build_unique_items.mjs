@@ -46,7 +46,7 @@ async function loadItemList() {
   try {
     const response = await fetch(itemsUrl, {
       headers: {
-        "User-Agent": "pobkr-translation/1.0 (+https://github.com/jun1bh1/poe2_translation)",
+        "User-Agent": "poe2-translation/1.0 (+https://github.com/jun1bh1/poe2_translation)",
       },
     });
     if (!response.ok) {
@@ -87,7 +87,7 @@ async function loadKoreanItemList() {
       const response = await fetch(url, {
         headers: {
           "User-Agent":
-            "pobkr-translation/1.0 (+https://github.com/jun1bh1/poe2_translation)",
+            "poe2-translation/1.0 (+https://github.com/jun1bh1/poe2_translation)",
         },
       });
       if (!response.ok) {

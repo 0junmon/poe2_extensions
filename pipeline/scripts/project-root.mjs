@@ -1,7 +1,8 @@
 // 파이프라인 루트(= data/, translations/ 가 있는 폴더)를 찾는다.
 //
 // 우선순위
-//   1) POBKR_ROOT 환경변수  (build-all.cmd 가 자기 폴더로 지정한다)
+//   1) TRANSLATION_ROOT 환경변수  (build-all.cmd 가 자기 폴더로 지정한다)
+//      레거시 POBKR_ROOT도 fallback으로 인정한다.
 //   2) 스크립트 폴더에서 위로 올라가며 data/balance 가 있는 폴더
 //   3) 스크립트 폴더의 상위 폴더 (기존 구조)
 //
@@ -30,7 +31,8 @@ export function findProjectRoot(startDirectory) {
 }
 
 export function resolveProjectRoot(importMetaUrl) {
-  const fromEnvironment = process.env.POBKR_ROOT;
+  const fromEnvironment =
+    process.env.TRANSLATION_ROOT || process.env.POBKR_ROOT;
   if (fromEnvironment) {
     return path.resolve(fromEnvironment);
   }

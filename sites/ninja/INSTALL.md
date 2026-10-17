@@ -5,7 +5,7 @@
 
 1. Set the data root once per shell, then move to `pipeline/`:
    ```powershell
-   $env:POBKR_ROOT = 'C:\Users\Administrator\Documents\poe2_translation'
+   $env:TRANSLATION_ROOT = 'C:\Users\Administrator\Documents\poe2_translation'
    cd C:\Users\Administrator\Documents\poe2_extensions\pipeline
    ```
 2. Run `npm run build:extension` (output: `..\dist\poe-ninja-korean`).

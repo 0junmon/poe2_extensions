@@ -23,13 +23,17 @@ import { findProjectRoot } from "./project-root.mjs";
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const dryRun = process.argv.includes("--dry-run");
 
-// 기준 폴더(base) 우선순위: --root 인자 > POBKR_ROOT 환경변수 > 스크립트 위치에서 자동 탐색.
-// build-all.cmd 가 자기 폴더를 POBKR_ROOT 로 넘기므로, cmd 가 있는 폴더가 기준이 된다.
+// 기준 폴더(base) 우선순위: --root 인자 > TRANSLATION_ROOT 환경변수 >
+// 스크립트 위치에서 자동 탐색. 레거시 POBKR_ROOT도 fallback으로 인정한다.
+// build-all.cmd 가 자기 폴더를 TRANSLATION_ROOT 로 넘기므로, cmd 가 있는 폴더가
+// 기준이 된다.
 const rootArgumentIndex = process.argv.indexOf("--root");
 const rootArgument =
   rootArgumentIndex >= 0 ? process.argv[rootArgumentIndex + 1] : undefined;
+const environmentRoot =
+  process.env.TRANSLATION_ROOT || process.env.POBKR_ROOT;
 const projectRoot = path.resolve(
-  rootArgument ?? process.env.POBKR_ROOT ?? findProjectRoot(scriptDirectory),
+  rootArgument ?? environmentRoot ?? findProjectRoot(scriptDirectory),
 );
 console.log(`기준 폴더: ${projectRoot}`);
 
@@ -123,7 +127,7 @@ STEPS.forEach((step, index) => {
     cwd: projectRoot,
     // shell 없이 실행한다: 실행 파일 경로에 공백이 있어도(node.exe) 그대로 전달되도록.
     encoding: "utf8",
-    env: { ...process.env, POBKR_ROOT: projectRoot },
+    env: { ...process.env, TRANSLATION_ROOT: projectRoot },
   });
   const seconds = ((Date.now() - started) / 1000).toFixed(1);
   const lines = `${result.stdout ?? ""}${result.stderr ?? ""}`
